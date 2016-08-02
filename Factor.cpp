@@ -14,7 +14,7 @@
  */
 
 
-
+#include <cassert>
 #include "Factor.h"
 
 std::unordered_map<int, zzhang::CFactorBase::FactorCreator> zzhang::CFactorBase::FactorCreators =
@@ -24,4 +24,15 @@ std::unordered_map<int, zzhang::CFactorBase::FactorCreator> zzhang::CFactorBase:
 zzhang::DenseEdgeFactor::DenseEdgeFactor(const void* InParam, const ExternalData* OuParam)
 {
      
+     assert(OuParam->SubFactors.size() == 2);
+     EdgeInternal *internal = (EdgeInternal *) InParam;
+     NofStates = OuParam->NofStates;
+     n1 = (NodeFactor *)OuParam->SubFactors[0];
+     n2 = (NodeFactor *)OuParam->SubFactors[1];
+     bi = n1->m_bi; bj = n2->m_bi;
+
+     ei = internal->ei; ej = internal->ej;
+     int xijMax = NofStates[ei] * NofStates[ej];
+     bij = new Real[xijMax];
+     memcpy(bij, internal->data, sizeof(Real) * xijMax);
 }

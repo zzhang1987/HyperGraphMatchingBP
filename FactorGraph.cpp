@@ -54,3 +54,36 @@ std::vector<Real> zzhang::CFactorGraph::GetBelief(int Nid)
      return std::vector<Real>(m_bi[Nid],
 			      m_bi[Nid] + m_NofStates[Nid]);
 }
+
+
+bool zzhang::CFactorGraph::AddEdge(int ei, int ej, double *data)
+{
+     assert(ei != ej);
+     assert(ei < m_NofNodes && ej < m_NofNodes);
+     std::set<int> edge;
+     edge.insert(ei);
+     edge.insert(ej);
+
+     if(m_FactorId.find(edge) == m_FactorId.end())
+     {
+	  std::vector<CFactorBase *> Nodes(2);
+	  EdgeInternal inEdge;
+	  inEdge.ei = ei;
+	  inEdge.ej = ej;
+	  inEdge.data = data;
+	  ExternalData exEdge;
+	  exEdge.NofNodes = m_NofNodes;
+	  exEdge.NofStates = m_NofStates;
+	  Nodes[0] = (CFactorBase* ) &m_NodeFactors[ei];
+	  Nodes[1] = (CFactorBase* ) &m_NodeFactors[ej];
+	  exEdge.SubFactors = Nodes;
+
+	  DenseEdgeFactor* e = new DenseEdgeFactor(&inEdge, &exEdge);
+
+	  m_Factors.push_back(e);
+     }
+     else{
+	  //Not implemented
+	  return false;
+     }
+}

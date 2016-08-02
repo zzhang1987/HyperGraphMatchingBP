@@ -33,7 +33,7 @@ typedef struct _ExternalData{
 
 typedef struct _FactorCreatorData{
      void *InternalData;
-     ExternalData *ExternalData;
+     ExternalData *ExtData;
 } FactorCreatorData;
 
 

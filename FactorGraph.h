@@ -80,7 +80,16 @@ namespace zzhang{
 	  CFactorGraph(int NofNodes, int* NofStates);
 
 	  void AddNodeBelief(int Nid, double* bi);
+	  bool AddEdge(int ei, int ej, double *data);
 
+	  void UpdateMessages()
+	  {
+	       for(int i = 0; i < m_Factors.size(); i++)
+	       {
+		    m_Factors[i]->UpdateMessages();
+	       }
+	  }
+	  
 	  /**
 	   * For debug in python;
 	   */

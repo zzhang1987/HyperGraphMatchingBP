@@ -17,11 +17,13 @@
 #ifndef FACTOR_H
 #define FACTOR_H 1
 
+#include <iomanip>
 #include <utility>
 #include <unordered_map>
 #include <vector>
 #include "PRTypes.h"
 #include <iostream>
+#include <cstring>
 
 
 #define FACTOR_INVALID -1
@@ -38,12 +40,6 @@ struct EdgeInternal{
      int ej;
      Real* data;
 };
-struct EdgeExternal{
-     Real* bi;
-     Real* bj;
-     int* NofStates;
-};
-
 struct SparseEdgeInternal{
      int ei;
      int ej;
@@ -92,11 +88,12 @@ namespace zzhang{
 	       FactorCreator creator = FactorCreators[ID];
 	       return creator(nodes, data);
 	  }
-     protected:
-	  int m_LocalMax;
-	  bool SetLocalMax(int Idx){
-	       m_LocalMax = Idx;
+	  CFactorBase(){
+	       m_LocalMax = 0;
 	  }
+     public:
+	  int m_LocalMax;
+	  
      public:
 	  /**
 	   * return the primal value of current factor with given decode.
@@ -117,6 +114,12 @@ namespace zzhang{
 	  virtual void Print() = 0;
 	  virtual bool IsGeneralFactor() = 0;
 	  virtual bool GetIncludedNodes(std::vector<int>& nodes) = 0;
+	  int size()
+	  {
+	       std::vector<int> nodes;
+	       GetIncludedNodes(nodes);
+	       return nodes.size();
+	  }
 	  /**
 	   * Desctrotor;
 	   */
@@ -127,30 +130,11 @@ namespace zzhang{
 	  static const int FactorID = FACTOR_INVALID;
      };
      class CFactorGraph;
-     class DenseEdgeFactor : public CFactorBase
-     {
-     private:
-	  Real* bi;
-	  Real* bj;
-	  Real* bij;
-	  int ei;
-	  int ej;
-	  int *NofStates;
-     public:
-	  DenseEdgeFactor(const void* InParam, const ExternalData* OuParam);
-	  virtual Real Primal(int *decode);
-	  virtual Real Dual();
-	  
-	  virtual ~DenseEdgeFactor(){
-	       delete []bij;
-	  }
-     public:
-	  static const int FactorID = FACTOR_EDGE_ID;
 
-     };
+     
      class NodeFactor : public CFactorBase
      {
-     private:
+     public:
 	  Real * m_bi;
 	  int m_NofStates;
 	  int m_id;
@@ -202,6 +186,116 @@ namespace zzhang{
 	       }
 	       std::cout << std::endl;
 	  }
+
+     };
+     
+     class DenseEdgeFactor : public CFactorBase
+     {
+     private:
+	  Real* bi;
+	  Real* bj;
+	  Real* bij;
+	  int ei;
+	  int ej;
+	  int *NofStates;
+	  NodeFactor *n1;
+	  NodeFactor *n2;
+     private:
+	  friend class CFactorGraph;
+	  DenseEdgeFactor(const void* InParam, const ExternalData* OuParam);
+     public:
+	  virtual Real Primal(int *decode){
+	       return bij[decode[ei] * NofStates[ej] + decode[ej]];
+	  }
+	  virtual Real Dual(){
+	       return bij[m_LocalMax];
+	  }
+	  virtual bool IsGeneralFactor(){
+	       return true;
+	  }
+	  virtual void UpdateMessages(){
+	       Real LocalMaxV = -10000;
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    int base = xi * NofStates[ej];
+		    for(int xj = 0; xj < NofStates[ej]; xj++)
+		    {
+			 bij[base++] += bi[xi] + bj[xj];
+		    }
+	       }
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    bi[xi] = -10000;
+	       }
+	       for(int xj = 0; xj < NofStates[ej]; xj++)
+	       {
+		    bj[xj] = -10000;
+	       }
+
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    int base = xi * NofStates[ej];
+		    for(int xj = 0; xj < NofStates[ej]; xj++)
+		    {
+			 if(bij[base] > bi[xi])
+			      bi[xi] = bij[base];
+			 if(bij[base] > bj[xj])
+			      bj[xj] = bij[base];
+			 if(bij[base] > LocalMaxV)
+			 {
+			      LocalMaxV = bij[base];
+			      m_LocalMax = base;
+			      n1->m_LocalMax = xi;
+			      n2->m_LocalMax = xj;
+			 }
+			 base++;
+		    }
+	       }
+
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    bi[xi] *= 0.5;
+	       }
+	       for(int xj = 0; xj < NofStates[ej]; xj++)
+	       {
+		    bj[xj] *= 0.5;
+	       }
+
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    int base = xi * NofStates[ej];
+		    for(int xj = 0; xj < NofStates[ej]; xj++)
+		    {
+			 bij[base++] -= bi[xi] + bj[xj];
+		    }
+	       }
+	  }
+	  virtual bool GetIncludedNodes(std::vector<int>& nodes) {
+	       nodes =std::vector<int>(2);
+	       nodes[0] = ei; nodes[1] = ej;
+	  }
+	  
+	  virtual void Print(){
+	       int xijMax = NofStates[ei] * NofStates[ej];
+	       std::cout << "Edge: " << ei << " " << ej << std::endl;
+	       std::cout << "Potentials : " << NofStates[ei] << "x" << NofStates[ej] <<  " LocalMax: " << m_LocalMax <<std::endl;
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    int base = xi * NofStates[ej];
+		    for(int xj = 0; xj < NofStates[ej]; xj++)
+		    {
+			 std::cout << std::showpoint <<  std::setprecision(6) << std::setw(10) <<bij[base++] << " ";
+		    }
+		    std::cout << std::endl;
+	       }
+	       
+	       
+	  }
+	  virtual ~DenseEdgeFactor(){
+	       delete []bij;
+	  }
+     public:
+	  static const int FactorID = FACTOR_EDGE_ID;
 
      };
 }
