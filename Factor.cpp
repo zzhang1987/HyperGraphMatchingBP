@@ -19,3 +19,9 @@
 
 std::unordered_map<int, zzhang::CFactorBase::FactorCreator> zzhang::CFactorBase::FactorCreators =
      std::unordered_map<int, zzhang::CFactorBase::FactorCreator>();
+
+
+zzhang::DenseEdgeFactor::DenseEdgeFactor(const void* InParam, const ExternalData* OuParam)
+{
+     
+}

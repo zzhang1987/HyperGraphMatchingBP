@@ -18,6 +18,7 @@
 #define FACTORGRAPH_H 1
 #include <vector>
 #include <unordered_map>
+#include <boost/functional/hash.hpp>
 #include "PRTypes.h"
 #include "Factor.h"
 
@@ -54,6 +55,13 @@ namespace zzhang{
 	   * Node beliefs
 	   */
 	  Real**  m_bi;
+	  /**
+	   * Node Factors are stored sepratedly to other factors.
+	   */
+	  std::vector<NodeFactor> m_NodeFactors;
+
+	  std::unordered_map<std::set<int>, int, boost::hash<std::set<int> > > m_FactorId;
+	  
      public:
 	  virtual ~CFactorGraph(){
 	       delete [] m_NofStates;
@@ -71,12 +79,23 @@ namespace zzhang{
 
 	  CFactorGraph(int NofNodes, int* NofStates);
 
-	  void AddNodeBelief(int Nid, Real* bi);
+	  void AddNodeBelief(int Nid, double* bi);
 
 	  /**
 	   * For debug in python;
 	   */
 	  std::vector<Real> GetBelief(int Nid);
+
+	  void PrintFactorInfo(){
+	       for(int i = 0; i < m_NofNodes; i++)
+	       {
+		    m_NodeFactors[i].Print();
+	       }
+	       for(int i = 0; i < m_Factors.size(); i++)
+	       {
+		    m_Factors[i]->Print();
+	       }
+	  }
 	  
      };
 }

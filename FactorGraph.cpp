@@ -28,10 +28,12 @@ zzhang::CFactorGraph::CFactorGraph(int NofNodes, int *NofStates)
      memcpy(m_NofStates, NofStates, sizeof(int) * NofNodes);
 
      m_bi = new Real*[m_NofNodes];
+     m_NodeFactors = std::vector<NodeFactor>(m_NofNodes);
      for(int ni = 0; ni < m_NofNodes; ni++)
      {
 	  m_bi[ni] = new Real[m_NofStates[ni]];
 	  memset(m_bi[ni], 0, sizeof(Real) * m_NofStates[ni]);
+	  m_NodeFactors[ni] = NodeFactor(ni, m_NofStates[ni], m_bi[ni]);
      }
 }
 

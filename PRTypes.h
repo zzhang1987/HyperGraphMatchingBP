@@ -17,6 +17,28 @@
 #ifndef PRTYPES_H
 #define PRTYPES_H 1
 
-typedef double Real;
+#define Real double
+
+namespace zzhang{
+     class CFactorBase;
+}
+
+typedef struct _ExternalData{
+     int NofNodes;
+     int *NofStates;
+     std::vector<zzhang::CFactorBase *> SubFactors; 
+} ExternalData;
+
+
+
+typedef struct _FactorCreatorData{
+     void *InternalData;
+     ExternalData *ExternalData;
+} FactorCreatorData;
+
+
+
+
+//typedef double Real;
 
 #endif // PRTYPES_H
