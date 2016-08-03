@@ -186,8 +186,164 @@ namespace zzhang{
 	       }
 	       std::cout << std::endl;
 	  }
+     private:
+	  void FindLocalMax()
+	  {
+	       double MaxV = -DBL_MAX;
+	       for(int i = 0; i < m_NofStates; i++)
+	       {
+		    if(m_bi[i] > MaxV)
+		    {
+			 MaxV = m_bi[i];
+			 m_LocalMax = i;
+		    }
+	       }
+	  }
 
      };
+
+
+
+     class SparseEdgeFactor : public CFactorBase
+     {
+     private:
+	  Real *bij;
+	  Real *mi;
+	  Real *mj;
+	  Real *bi;
+	  Real *bj;
+	  Real *bitmp;
+	  Real *bjtmp;
+	  int ei;
+	  int ej;
+	  int *NofStates;
+	  int *nnzIdx;
+	  int nnz;
+	  NodeFactor *n1;
+	  NodeFactor *n2;
+	  int LocalMaxXi;
+	  int LocalMaxXj;
+     private:
+	  friend class CFactorGraph;
+	  SparseEdgeFactor(const void * InParam, const ExternalData* OuParam){
+	       SparseEdgeInternal *internal = (SparseEdgeInternal *) InParam;
+	       assert(OuParam->SubFactors.size() == 2);
+	       NofStates = OuParam->NofStates;
+	       n1 = (NodeFactor *)OuParam->SubFactors[0];
+	       n2 = (NodeFactor *)OuParam->SubFactors[1];
+	       bi = n1->m_bi; bj = n2->m_bi;
+     
+	       ei = internal->ei; ej = internal->ej;
+	       int xijMax = NofStates[ei] * NofStates[ej];
+	       bij = new Real[xijMax];
+	       memcpy(bij, internal->data, sizeof(Real) * xijMax);
+
+	       nnz = internal->nnz;
+	       memcpy(nnzIdx, internal->nnzIdx, sizeof(int) * nnz * 2);
+	       mi = new Real[NofStates[ei]];
+	       mj = new Real[NofStates[ej]];
+
+	       bitmp = new Real[NofStates[ei]];
+	       bjtmp = new Real[NofStates[ej]];
+	       
+	       memcpy(mi, internal->mi, sizeof(double) * NofStates[ei]);
+	       memcpy(mj, internal->mj, sizeof(double) * NofStates[ej]);
+	       LocalMaxXi = 0;
+	       LocalMaxXj = 0;
+	  }
+	  virtual ~SparseEdgeFactor(){
+	       delete []bij;
+	       delete []mi;
+	       delete []mj;
+	  }
+	  virtual Real Primal(int *decode){
+	       return bij[decode[ei] * NofStates[ej] + decode[ej]] - mi[decode[ei]] - mj[decode[ej]];
+	  }
+	  virtual Real Dual(){
+	       return bij[m_LocalMax] - bi[LocalMaxXi] - bj[LocalMaxXj];
+	  }
+	  
+	  virtual bool IsGeneralFactor(){
+	       return true;
+	  }
+	  virtual void UpdateMessages(){
+	       Real LocalMaxV = -DBL_MAX;
+	       Real Maxi = -DBL_MAX;
+	       Real Maxj = -DBL_MAX;
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    double t = bi[xi];
+		    bi[xi] -= mi[xi];
+		    if(bi[xi] > Maxi)
+		    {
+			 Maxi = bi[xi];
+		    }
+	       }
+	       for(int xj = 0; xj < NofStates[ej]; xj++)
+	       {
+		    double t = bj[xj];
+		    bj[xj] -= mj[xj];
+		    if(bj[xj] > Maxj)
+		    {
+			 Maxj = bj[xj];
+		    }
+		    bjtmp[xj] = bj[xj] + Maxi;
+	       }
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    bitmp[xi] = bi[xi] + Maxj;
+	       }
+	       for(int nnzi = 0; nnzi < nnz; nnzi++)
+	       {
+		    int xi = nnzIdx[2 * nnzi];
+		    int xj = nnzIdx[2 * nnzi + 1];
+
+		    int xij = xi * NofStates[ej] + xj;
+		    double V = bij[xij] + bi[xi] + bj[xj];
+		    if(V > bitmp[xi])
+		    {
+			 bitmp[xi] = V;
+		    }
+		    if(V < bjtmp[xj])
+		    {
+			 bjtmp[xj] = V;
+		    }
+	       }
+
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    bitmp[xi] *= 0.5;
+		    mi[xi] = bitmp[xi] - bi[xi];
+		    bi[xi] = bitmp[xi];
+	       }
+	       for(int xj = 0; xj < NofStates[ej]; xj++)
+	       {
+		    bjtmp[xj] *= 0.5;
+		    mj[xj] = bjtmp[xj] - bj[xj];
+		    bj[xj] = bjtmp[xj];
+	       }
+	       
+	  }
+	  virtual bool GetIncludedNodes(std::vector<int>& nodes) {
+	       nodes =std::vector<int>(2);
+	       nodes[0] = ei; nodes[1] = ej;
+	  }
+	  virtual void Print(){
+	       int xijMax = NofStates[ei] * NofStates[ej];
+	       std::cout << "Edge: " << ei << " " << ej << std::endl;
+	       std::cout << "Potentials : " << NofStates[ei] << "x" << NofStates[ej] <<  " LocalMax: " << m_LocalMax <<std::endl;
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    int base = xi * NofStates[ej];
+		    for(int xj = 0; xj < NofStates[ej]; xj++)
+		    {
+			 std::cout << std::showpoint <<  std::setprecision(6) << std::setw(10) <<bij[base++] - mi[xi] - mj[xj] << " ";
+		    }
+		    std::cout << std::endl;
+	       }
+	  }
+     };
+     
      
      class DenseEdgeFactor : public CFactorBase
      {
@@ -214,7 +370,7 @@ namespace zzhang{
 	       return true;
 	  }
 	  virtual void UpdateMessages(){
-	       Real LocalMaxV = -10000;
+	       Real LocalMaxV = -DBL_MAX;
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
 	       {
 		    int base = xi * NofStates[ej];
@@ -225,11 +381,11 @@ namespace zzhang{
 	       }
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
 	       {
-		    bi[xi] = -10000;
+		    bi[xi] = -DBL_MAX;
 	       }
 	       for(int xj = 0; xj < NofStates[ej]; xj++)
 	       {
-		    bj[xj] = -10000;
+		    bj[xj] = -DBL_MAX;
 	       }
 
 	       for(int xi = 0; xi < NofStates[ei]; xi++)

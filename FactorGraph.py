@@ -710,6 +710,9 @@ class CFactorGraph(_object):
     def AddEdge(self, ei, ej, data):
         return _FactorGraph.CFactorGraph_AddEdge(self, ei, ej, data)
 
+    def AddSparseEdge(self, ei, ej, data, mi, mj, nnz, nnzIdx):
+        return _FactorGraph.CFactorGraph_AddSparseEdge(self, ei, ej, data, mi, mj, nnz, nnzIdx)
+
     def UpdateMessages(self):
         return _FactorGraph.CFactorGraph_UpdateMessages(self)
 
@@ -914,6 +917,22 @@ class NodeFactor(CFactorBase):
         return _FactorGraph.NodeFactor_Print(self)
 NodeFactor_swigregister = _FactorGraph.NodeFactor_swigregister
 NodeFactor_swigregister(NodeFactor)
+
+class SparseEdgeFactor(CFactorBase):
+    __swig_setmethods__ = {}
+    for _s in [CFactorBase]:
+        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, SparseEdgeFactor, name, value)
+    __swig_getmethods__ = {}
+    for _s in [CFactorBase]:
+        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
+    __getattr__ = lambda self, name: _swig_getattr(self, SparseEdgeFactor, name)
+
+    def __init__(self, *args, **kwargs):
+        raise AttributeError("No constructor defined")
+    __repr__ = _swig_repr
+SparseEdgeFactor_swigregister = _FactorGraph.SparseEdgeFactor_swigregister
+SparseEdgeFactor_swigregister(SparseEdgeFactor)
 
 class DenseEdgeFactor(CFactorBase):
     __swig_setmethods__ = {}

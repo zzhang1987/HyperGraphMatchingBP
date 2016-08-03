@@ -37,7 +37,9 @@ typedef struct _FactorCreatorData{
 } FactorCreatorData;
 
 
-
+namespace zzhang{
+     const double DBL_MAX = 10000;
+}
 
 //typedef double Real;
 

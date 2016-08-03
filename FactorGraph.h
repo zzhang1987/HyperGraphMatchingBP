@@ -61,7 +61,17 @@ namespace zzhang{
 	  std::vector<NodeFactor> m_NodeFactors;
 
 	  std::unordered_map<std::set<int>, int, boost::hash<std::set<int> > > m_FactorId;
+
+	  /**
+	   * Current Decode
+	   */
+	  int *m_CurrentDecode;
+	  /**
+	   * Best Decode
+	   */
+	  int *m_BestDecode;
 	  
+	  Real BestDecodeV;
      public:
 	  virtual ~CFactorGraph(){
 	       delete [] m_NofStates;
@@ -74,20 +84,45 @@ namespace zzhang{
 		    delete[] m_bi[i];
 	       }
 	       delete [] m_bi;
+	       delete [] m_CurrentDecode;
+	       delete [] m_BestDecode;
 	  }
 	  int GetNofNodes(){return m_NofNodes;}
 
+	  /**
+	   * Constructor
+	   * @param Number of nodes
+	   * @param the states of each node
+	   */
 	  CFactorGraph(int NofNodes, int* NofStates);
 
 	  void AddNodeBelief(int Nid, double* bi);
 	  bool AddEdge(int ei, int ej, double *data);
-
+	  bool AddSparseEdge(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
 	  void UpdateMessages()
 	  {
 	       for(int i = 0; i < m_Factors.size(); i++)
 	       {
 		    m_Factors[i]->UpdateMessages();
 	       }
+	       
+	       double Dual = 0.0;
+	       for(int i = 0; i < m_NofNodes; i++)
+	       {
+		    m_CurrentDecode[i] = m_NodeFactors[i].m_LocalMax;
+		    Dual += m_bi[i][m_CurrentDecode[i]];
+	       }
+	       double Primal = Dual;
+	       for(int i = 0; i <m_Factors.size(); i++)
+	       {
+		    Primal += m_Factors[i]->Primal(m_CurrentDecode);
+	       }
+	       if(Primal > BestDecodeV)
+	       {
+		    BestDecodeV = Primal;
+		    memcpy(m_BestDecode, m_CurrentDecode, sizeof(int) * m_NofNodes);
+	       }
+	       std::cout << "Current Dual " << Dual << " Current Primal " << Primal << std::endl;
 	  }
 	  
 	  /**

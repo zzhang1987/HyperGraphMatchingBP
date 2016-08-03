@@ -30,7 +30,7 @@ zzhang::DenseEdgeFactor::DenseEdgeFactor(const void* InParam, const ExternalData
      n1 = (NodeFactor *)OuParam->SubFactors[0];
      n2 = (NodeFactor *)OuParam->SubFactors[1];
      bi = n1->m_bi; bj = n2->m_bi;
-
+     
      ei = internal->ei; ej = internal->ej;
      int xijMax = NofStates[ei] * NofStates[ej];
      bij = new Real[xijMax];

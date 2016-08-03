@@ -35,6 +35,12 @@ zzhang::CFactorGraph::CFactorGraph(int NofNodes, int *NofStates)
 	  memset(m_bi[ni], 0, sizeof(Real) * m_NofStates[ni]);
 	  m_NodeFactors[ni] = NodeFactor(ni, m_NofStates[ni], m_bi[ni]);
      }
+     m_CurrentDecode = new int[NofNodes];
+     m_BestDecode = new int[NofNodes];
+     BestDecodeV = -DBL_MAX;
+     memset(m_CurrentDecode, 0, sizeof(int) * NofNodes);
+     memset(m_BestDecode, 0, sizeof(int) * NofNodes);
+     
 }
 
 
@@ -46,6 +52,7 @@ void zzhang::CFactorGraph::AddNodeBelief(int Nid, Real* bi)
      {
 	  (*(rbi++)) += *(bi++);
      }
+     m_NodeFactors[Nid].FindLocalMax();
 }
 
 std::vector<Real> zzhang::CFactorGraph::GetBelief(int Nid)
@@ -55,7 +62,41 @@ std::vector<Real> zzhang::CFactorGraph::GetBelief(int Nid)
 			      m_bi[Nid] + m_NofStates[Nid]);
 }
 
+bool zzhang::CFactorGraph::AddSparseEdge(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx)
+{
+     assert(ei != ej);
+     assert(ei < m_NofNodes && ej < m_NofNodes);
+     std::set<int> edge;
+     edge.insert(ei);
+     edge.insert(ej);
+     if(m_FactorId.find(edge) == m_FactorId.end())
+     {
+	  std::vector<CFactorBase *> Nodes(2);
+	  SparseEdgeInternal inEdge;
+	  inEdge.ei = ei;
+	  inEdge.ej = ej;
+	  inEdge.data = data;
+	  inEdge.mi = mi;
+	  inEdge.mj = mj;
+	  inEdge.nnz = nnz;
+	  inEdge.nnzIdx = nnzIdx;
+	  
+	  ExternalData exEdge;
+	  exEdge.NofNodes = m_NofNodes;
+	  exEdge.NofStates = m_NofStates;
+	  Nodes[0] = (CFactorBase* ) &m_NodeFactors[ei];
+	  Nodes[1] = (CFactorBase* ) &m_NodeFactors[ej];
+	  exEdge.SubFactors = Nodes;
+	  SparseEdgeFactor *e = new SparseEdgeFactor(&inEdge, &exEdge);
 
+	  m_Factors.push_back(e);
+	  return true;
+     }
+     else{
+	  //Not implemented
+	  return false;
+     }
+}
 bool zzhang::CFactorGraph::AddEdge(int ei, int ej, double *data)
 {
      assert(ei != ej);
@@ -81,9 +122,11 @@ bool zzhang::CFactorGraph::AddEdge(int ei, int ej, double *data)
 	  DenseEdgeFactor* e = new DenseEdgeFactor(&inEdge, &exEdge);
 
 	  m_Factors.push_back(e);
+	  return true;
      }
      else{
 	  //Not implemented
 	  return false;
      }
 }
+
