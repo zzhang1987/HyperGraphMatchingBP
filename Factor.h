@@ -238,7 +238,9 @@ namespace zzhang{
 	       bij = new Real[xijMax];
 	       memcpy(bij, internal->data, sizeof(Real) * xijMax);
 
+	       
 	       nnz = internal->nnz;
+	       nnzIdx = new int[nnz * 2];
 	       memcpy(nnzIdx, internal->nnzIdx, sizeof(int) * nnz * 2);
 	       mi = new Real[NofStates[ei]];
 	       mj = new Real[NofStates[ej]];
@@ -246,8 +248,8 @@ namespace zzhang{
 	       bitmp = new Real[NofStates[ei]];
 	       bjtmp = new Real[NofStates[ej]];
 	       
-	       memcpy(mi, internal->mi, sizeof(double) * NofStates[ei]);
-	       memcpy(mj, internal->mj, sizeof(double) * NofStates[ej]);
+	       memcpy(mi, internal->mi, sizeof(Real) * NofStates[ei]);
+	       memcpy(mj, internal->mj, sizeof(Real) * NofStates[ej]);
 	       LocalMaxXi = 0;
 	       LocalMaxXj = 0;
 	  }
@@ -255,6 +257,7 @@ namespace zzhang{
 	       delete []bij;
 	       delete []mi;
 	       delete []mj;
+	       delete []nnzIdx;
 	  }
 	  virtual Real Primal(int *decode){
 	       return bij[decode[ei] * NofStates[ej] + decode[ej]] - mi[decode[ei]] - mj[decode[ej]];
@@ -277,6 +280,7 @@ namespace zzhang{
 		    if(bi[xi] > Maxi)
 		    {
 			 Maxi = bi[xi];
+			 n1->m_LocalMax = xi;
 		    }
 	       }
 	       for(int xj = 0; xj < NofStates[ej]; xj++)
@@ -286,6 +290,7 @@ namespace zzhang{
 		    if(bj[xj] > Maxj)
 		    {
 			 Maxj = bj[xj];
+			 n2->m_LocalMax = xj;
 		    }
 		    bjtmp[xj] = bj[xj] + Maxi;
 	       }
@@ -304,12 +309,19 @@ namespace zzhang{
 		    {
 			 bitmp[xi] = V;
 		    }
-		    if(V < bjtmp[xj])
+		    if(V > bjtmp[xj])
 		    {
 			 bjtmp[xj] = V;
 		    }
+		    if(V > LocalMaxV)
+		    {
+			 LocalMaxV = V;
+			 
+			 n1->m_LocalMax = xi;
+			 n2->m_LocalMax = xj;
+		    }
 	       }
-
+	       m_LocalMax = n1->m_LocalMax * NofStates[ej] + n2->m_LocalMax;
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
 	       {
 		    bitmp[xi] *= 0.5;
@@ -337,7 +349,7 @@ namespace zzhang{
 		    int base = xi * NofStates[ej];
 		    for(int xj = 0; xj < NofStates[ej]; xj++)
 		    {
-			 std::cout << std::showpoint <<  std::setprecision(6) << std::setw(10) <<bij[base++] - mi[xi] - mj[xj] << " ";
+			 std::cout << std::showpoint <<  std::setprecision(6) << std::setw(10) << bij[base++] - mi[xi] - mj[xj] << " ";
 		    }
 		    std::cout << std::endl;
 	       }

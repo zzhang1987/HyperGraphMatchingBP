@@ -691,6 +691,9 @@ class CFactorGraph(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, CFactorGraph, name)
     __repr__ = _swig_repr
+
+    def AddAuctionFactor(self):
+        return _FactorGraph.CFactorGraph_AddAuctionFactor(self)
     __swig_destroy__ = _FactorGraph.delete_CFactorGraph
     __del__ = lambda self: None
 

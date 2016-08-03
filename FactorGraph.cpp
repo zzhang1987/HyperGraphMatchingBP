@@ -40,7 +40,7 @@ zzhang::CFactorGraph::CFactorGraph(int NofNodes, int *NofStates)
      BestDecodeV = -DBL_MAX;
      memset(m_CurrentDecode, 0, sizeof(int) * NofNodes);
      memset(m_BestDecode, 0, sizeof(int) * NofNodes);
-     
+     auFactor = NULL;
 }
 
 

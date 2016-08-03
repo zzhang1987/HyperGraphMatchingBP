@@ -4,7 +4,7 @@ from distutils.core import setup, Extension
 
 
 FactorGraph_module = Extension('_FactorGraph',
-                           sources=['FactorGraph.cpp', 'FactorCreator.cpp', 'Factor.cpp', 'FactorGraph_wrap.cxx'],
+                           sources=['FactorGraph.cpp', 'FactorCreator.cpp', 'Factor.cpp', 'FactorGraph_wrap.cxx', 'Auction.cpp'],
                            extra_compile_args=['-std=c++11', '-I/usr/local/include','-DPERFECT_MATCHING_DOUBLE'],
                            )
 

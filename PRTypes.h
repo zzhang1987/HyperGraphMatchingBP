@@ -18,6 +18,9 @@
 #define PRTYPES_H 1
 
 #define Real double
+#include <vector>
+#include <cassert>
+class CFactorBase;
 
 namespace zzhang{
      class CFactorBase;

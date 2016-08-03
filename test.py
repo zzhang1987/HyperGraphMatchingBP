@@ -61,11 +61,12 @@ for i in range(NofNodes):
     mj[i] = 0
 
 G.AddEdge(0, 1, EdgePotentials);
-G.AddSparseEdge(1, 1, SparseEdgePotentials, mi, mj, NNZs, nnzIdx)
-
+G.AddSparseEdge(1, 2, SparseEdgePotentials, mi, mj, NNZs, nnzIdx)
+G.AddSparseEdge(2, 0, SparseEdgePotentials, mi, mj, NNZs, nnzIdx)
+G.AddAuctionFactor()
 
 G.PrintFactorInfo();
-
-G.UpdateMessages();
+for iter in range(100):
+    G.UpdateMessages();
 
 G.PrintFactorInfo();

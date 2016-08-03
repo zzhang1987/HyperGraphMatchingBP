@@ -21,7 +21,7 @@
 #include <boost/functional/hash.hpp>
 #include "PRTypes.h"
 #include "Factor.h"
-
+#include "Auction.h"
 
 
 
@@ -72,7 +72,21 @@ namespace zzhang{
 	  int *m_BestDecode;
 	  
 	  Real BestDecodeV;
+	  /**
+	   * Special Factor, Auction Factor
+	   */
+
+	  CAuctionFactor * auFactor;
+	  
+
      public:
+
+	  void AddAuctionFactor()
+	  {
+	       auFactor = new CAuctionFactor(m_NofNodes, m_NofStates,
+					     m_bi, m_NodeFactors);
+	  }
+	  
 	  virtual ~CFactorGraph(){
 	       delete [] m_NofStates;
 	       for(int i = 0; i < m_Factors.size(); i++)
@@ -86,6 +100,7 @@ namespace zzhang{
 	       delete [] m_bi;
 	       delete [] m_CurrentDecode;
 	       delete [] m_BestDecode;
+	       if(auFactor) delete auFactor;
 	  }
 	  int GetNofNodes(){return m_NofNodes;}
 
@@ -99,19 +114,21 @@ namespace zzhang{
 	  void AddNodeBelief(int Nid, double* bi);
 	  bool AddEdge(int ei, int ej, double *data);
 	  bool AddSparseEdge(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
+
 	  void UpdateMessages()
 	  {
 	       for(int i = 0; i < m_Factors.size(); i++)
 	       {
 		    m_Factors[i]->UpdateMessages();
 	       }
-	       
+	       if(auFactor) auFactor->Auction();
 	       double Dual = 0.0;
 	       for(int i = 0; i < m_NofNodes; i++)
 	       {
 		    m_CurrentDecode[i] = m_NodeFactors[i].m_LocalMax;
 		    Dual += m_bi[i][m_CurrentDecode[i]];
 	       }
+	       if(auFactor) Dual += auFactor->SumPrice;
 	       double Primal = Dual;
 	       for(int i = 0; i <m_Factors.size(); i++)
 	       {
