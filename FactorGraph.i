@@ -8,6 +8,7 @@
 %include "std_vector.i"
 %include "std_unordered_map.i"
 %include "carrays.i"
+
 %array_class(int, intArray);
 %array_class(double, doubleArray);
 

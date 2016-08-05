@@ -17,6 +17,7 @@
 #ifndef FACTORGRAPH_H
 #define FACTORGRAPH_H 1
 #include <vector>
+#include <ctime>
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include "PRTypes.h"
@@ -78,9 +79,13 @@ namespace zzhang{
 
 	  CAuctionFactor * auFactor;
 	  
-
+	  double Dual;
      public:
 
+	  void SetVerbost(bool verbose){
+	       m_verbose = verbose;
+	  }
+	  
 	  void AddAuctionFactor()
 	  {
 	       auFactor = new CAuctionFactor(m_NofNodes, m_NofStates,
@@ -104,6 +109,7 @@ namespace zzhang{
 	  }
 	  int GetNofNodes(){return m_NofNodes;}
 
+	  
 	  /**
 	   * Constructor
 	   * @param Number of nodes
@@ -114,15 +120,35 @@ namespace zzhang{
 	  void AddNodeBelief(int Nid, double* bi);
 	  bool AddEdge(int ei, int ej, double *data);
 	  bool AddSparseEdge(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
+	  bool AddSparseEdgeNZ(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
+	  bool m_verbose;
 
+	  void Solve(int MaxIter){
+	       const clock_t begin_time = clock();
+
+	       for(int iter=0; iter < MaxIter; iter++)
+	       {
+		    if(m_verbose)
+			 std::cout << "Iter=" << iter << " ";
+		    UpdateMessages();
+		    if(m_verbose) std::cout << " Time " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << std::endl;
+		    if(fabs(Dual - BestDecodeV) < 1e-4)
+			 break;
+
+	       }
+	  }
+	  
 	  void UpdateMessages()
 	  {
-	       for(int i = 0; i < m_Factors.size(); i++)
+	       int start = rand();
+
+	       for(int ii = 0; ii < m_Factors.size(); ii++)
 	       {
+		    int i = (ii + start) % m_Factors.size();
 		    m_Factors[i]->UpdateMessages();
 	       }
 	       if(auFactor) auFactor->Auction();
-	       double Dual = 0.0;
+	       Dual = 0.0;
 	       for(int i = 0; i < m_NofNodes; i++)
 	       {
 		    m_CurrentDecode[i] = m_NodeFactors[i].m_LocalMax;
@@ -139,7 +165,7 @@ namespace zzhang{
 		    BestDecodeV = Primal;
 		    memcpy(m_BestDecode, m_CurrentDecode, sizeof(int) * m_NofNodes);
 	       }
-	       std::cout << "Current Dual " << Dual << " Current Primal " << Primal << std::endl;
+	       if(m_verbose) std::cout << "Current Dual " << Dual << " Current Primal " << BestDecodeV ;
 	  }
 	  
 	  /**
@@ -147,6 +173,30 @@ namespace zzhang{
 	   */
 	  std::vector<Real> GetBelief(int Nid);
 
+	  double ComputeObj(int* decode){
+	       //assert(decode.size() == m_NofNodes);
+	       Real res = 0.0;
+	       for(int i = 0; i < m_NofNodes; i++)
+	       {
+		    res += m_bi[i][decode[i]];
+		    if(auFactor)
+		    {
+			 res += auFactor->prices[decode[i]];
+		    }
+	       }
+
+	       for(int i = 0; i < m_Factors.size(); i++)
+	       {
+		    res += m_Factors[i]->Primal(&decode[0]);
+	       }
+	       return res;
+	  }
+
+	  std::vector<int> GetDecode()
+	  {
+	       return std::vector<int>(m_BestDecode,
+				       m_BestDecode + m_NofNodes);
+	  }
 	  void PrintFactorInfo(){
 	       for(int i = 0; i < m_NofNodes; i++)
 	       {

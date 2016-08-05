@@ -204,9 +204,10 @@ namespace zzhang{
 
 
 
+     
      class SparseEdgeFactor : public CFactorBase
      {
-     private:
+     protected:
 	  Real *bij;
 	  Real *mi;
 	  Real *mj;
@@ -223,7 +224,7 @@ namespace zzhang{
 	  NodeFactor *n2;
 	  int LocalMaxXi;
 	  int LocalMaxXj;
-     private:
+     protected:
 	  friend class CFactorGraph;
 	  SparseEdgeFactor(const void * InParam, const ExternalData* OuParam){
 	       SparseEdgeInternal *internal = (SparseEdgeInternal *) InParam;
@@ -269,6 +270,7 @@ namespace zzhang{
 	  virtual bool IsGeneralFactor(){
 	       return true;
 	  }
+	  
 	  virtual void UpdateMessages(){
 	       Real LocalMaxV = -DBL_MAX;
 	       Real Maxi = -DBL_MAX;
@@ -355,6 +357,147 @@ namespace zzhang{
 	       }
 	  }
      };
+
+
+          class SparseEdgeNZFactor : public SparseEdgeFactor
+     {
+     private:
+	  friend class CFactorGraph;
+	  SparseEdgeNZFactor(const void * InParam, const ExternalData* OuParam):SparseEdgeFactor(InParam, OuParam){
+	  }
+
+	  virtual Real Primal(int *decode){
+	       return bij[decode[ei] * NofStates[ej] + decode[ej]] - mi[decode[ei]] - mj[decode[ej]];
+	  }
+	  virtual Real Dual(){
+	       return bij[m_LocalMax] - bi[LocalMaxXi] - bj[LocalMaxXj];
+	  }
+	  
+	  virtual bool IsGeneralFactor(){
+	       return true;
+	  }
+	  
+	  virtual void UpdateMessages(){
+	       Real LocalMaxV = -DBL_MAX;
+	       Real Maxi = -DBL_MAX;
+	       Real SecMaxi = -DBL_MAX;
+	       Real Maxj = -DBL_MAX;
+	       Real SecMaxj = -DBL_MAX;
+	       int SecMaxidx = -1;
+	       int SecMaxjdx = -1;
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    double t = bi[xi];
+		    bi[xi] -= mi[xi];
+		    if(bi[xi] > Maxi)
+		    {
+			 SecMaxi = Maxi;
+			 SecMaxidx = n1->m_LocalMax; 
+			 Maxi = bi[xi];
+			 n1->m_LocalMax = xi;
+		    }
+		    else if( bi[xi] > SecMaxi)
+		    {
+			 SecMaxi = bi[xi];
+			 SecMaxidx = xi;
+		    }
+	       }
+	       for(int xj = 0; xj < NofStates[ej]; xj++)
+	       {
+		    double t = bj[xj];
+		    bj[xj] -= mj[xj];
+		    if(bj[xj] > Maxj)
+		    {
+			 SecMaxj = Maxj;
+			 SecMaxjdx = n2->m_LocalMax;
+			 Maxj = bj[xj];
+			 n2->m_LocalMax = xj;
+		    }
+		    else if( bj[xj] > SecMaxj)
+		    {
+			 SecMaxj = bj[xj];
+			 SecMaxjdx = xj;
+		    }
+		    if(xj != n1->m_LocalMax)
+		    {
+			 bjtmp[xj] = bj[xj] + Maxi;
+		    }
+		    else{
+			 bjtmp[xj] = bj[xj] + SecMaxi;
+		    }
+		    
+	       }
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    if(xi != n2->m_LocalMax)
+		    {
+			 bitmp[xi] = bi[xi] + Maxj;
+		    }
+		    else{
+			 bitmp[xi] = bi[xi] + SecMaxj;
+		    }
+	       }
+
+	      
+	       for(int nnzi = 0; nnzi < nnz; nnzi++)
+	       {
+		    int xi = nnzIdx[2 * nnzi];
+		    int xj = nnzIdx[2 * nnzi + 1];
+
+		    int xij = xi * NofStates[ej] + xj;
+		    double V = bij[xij] + bi[xi] + bj[xj];
+		    if(V > bitmp[xi])
+		    {
+			 bitmp[xi] = V;
+		    }
+		    if(V > bjtmp[xj])
+		    {
+			 bjtmp[xj] = V;
+		    }
+		    if(V > LocalMaxV)
+		    {
+			 LocalMaxV = V;
+			 
+			 n1->m_LocalMax = xi;
+			 n2->m_LocalMax = xj;
+		    }
+	       }
+	       m_LocalMax = n1->m_LocalMax * NofStates[ej] + n2->m_LocalMax;
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    bitmp[xi] *= 0.5;
+		    mi[xi] = bitmp[xi] - bi[xi];
+		    bi[xi] = bitmp[xi];
+	       }
+	       for(int xj = 0; xj < NofStates[ej]; xj++)
+	       {
+		    bjtmp[xj] *= 0.5;
+		    mj[xj] = bjtmp[xj] - bj[xj];
+		    bj[xj] = bjtmp[xj];
+	       }
+	       
+	  }
+	  virtual bool GetIncludedNodes(std::vector<int>& nodes) {
+	       nodes =std::vector<int>(2);
+	       nodes[0] = ei; nodes[1] = ej;
+	  }
+	  virtual void Print(){
+	       int xijMax = NofStates[ei] * NofStates[ej];
+	       std::cout << "Edge: " << ei << " " << ej << std::endl;
+	       std::cout << "Potentials : " << NofStates[ei] << "x" << NofStates[ej] <<  " LocalMax: " << m_LocalMax <<std::endl;
+	       for(int xi = 0; xi < NofStates[ei]; xi++)
+	       {
+		    int base = xi * NofStates[ej];
+		    for(int xj = 0; xj < NofStates[ej]; xj++)
+		    {
+			 std::cout << std::showpoint <<  std::setprecision(6) << std::setw(10) << bij[base++] - mi[xi] - mj[xj] << " ";
+		    }
+		    std::cout << std::endl;
+	       }
+	  }
+	  
+     };
+
      
      
      class DenseEdgeFactor : public CFactorBase

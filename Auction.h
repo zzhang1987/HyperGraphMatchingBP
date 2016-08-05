@@ -52,7 +52,7 @@ namespace zzhang{
 		    }
 	       }
 	       double epsilon = 1.0;
-	       while(epsilon > 1e-7)
+	       while(epsilon > 1e-6)
 	       {
 		    memset(AssignMent, -1, sizeof(int) * NofNodes);
 		    while(1){
@@ -67,7 +67,7 @@ namespace zzhang{
 			 if(Finished) break;
 			 auctionRound(epsilon);
 		    }
-		    epsilon *= 0.15;
+		    epsilon *= 0.25;
 	       }
 
 	       SumPrice = 0.0;

@@ -692,6 +692,9 @@ class CFactorGraph(_object):
     __getattr__ = lambda self, name: _swig_getattr(self, CFactorGraph, name)
     __repr__ = _swig_repr
 
+    def SetVerbost(self, verbose):
+        return _FactorGraph.CFactorGraph_SetVerbost(self, verbose)
+
     def AddAuctionFactor(self):
         return _FactorGraph.CFactorGraph_AddAuctionFactor(self)
     __swig_destroy__ = _FactorGraph.delete_CFactorGraph
@@ -716,11 +719,27 @@ class CFactorGraph(_object):
     def AddSparseEdge(self, ei, ej, data, mi, mj, nnz, nnzIdx):
         return _FactorGraph.CFactorGraph_AddSparseEdge(self, ei, ej, data, mi, mj, nnz, nnzIdx)
 
+    def AddSparseEdgeNZ(self, ei, ej, data, mi, mj, nnz, nnzIdx):
+        return _FactorGraph.CFactorGraph_AddSparseEdgeNZ(self, ei, ej, data, mi, mj, nnz, nnzIdx)
+    __swig_setmethods__["m_verbose"] = _FactorGraph.CFactorGraph_m_verbose_set
+    __swig_getmethods__["m_verbose"] = _FactorGraph.CFactorGraph_m_verbose_get
+    if _newclass:
+        m_verbose = _swig_property(_FactorGraph.CFactorGraph_m_verbose_get, _FactorGraph.CFactorGraph_m_verbose_set)
+
+    def Solve(self, MaxIter):
+        return _FactorGraph.CFactorGraph_Solve(self, MaxIter)
+
     def UpdateMessages(self):
         return _FactorGraph.CFactorGraph_UpdateMessages(self)
 
     def GetBelief(self, Nid):
         return _FactorGraph.CFactorGraph_GetBelief(self, Nid)
+
+    def ComputeObj(self, decode):
+        return _FactorGraph.CFactorGraph_ComputeObj(self, decode)
+
+    def GetDecode(self):
+        return _FactorGraph.CFactorGraph_GetDecode(self)
 
     def PrintFactorInfo(self):
         return _FactorGraph.CFactorGraph_PrintFactorInfo(self)
@@ -936,6 +955,24 @@ class SparseEdgeFactor(CFactorBase):
     __repr__ = _swig_repr
 SparseEdgeFactor_swigregister = _FactorGraph.SparseEdgeFactor_swigregister
 SparseEdgeFactor_swigregister(SparseEdgeFactor)
+
+class SparseEdgeNZFactor(SparseEdgeFactor):
+    __swig_setmethods__ = {}
+    for _s in [SparseEdgeFactor]:
+        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, SparseEdgeNZFactor, name, value)
+    __swig_getmethods__ = {}
+    for _s in [SparseEdgeFactor]:
+        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
+    __getattr__ = lambda self, name: _swig_getattr(self, SparseEdgeNZFactor, name)
+
+    def __init__(self, *args, **kwargs):
+        raise AttributeError("No constructor defined")
+    __repr__ = _swig_repr
+    __swig_destroy__ = _FactorGraph.delete_SparseEdgeNZFactor
+    __del__ = lambda self: None
+SparseEdgeNZFactor_swigregister = _FactorGraph.SparseEdgeNZFactor_swigregister
+SparseEdgeNZFactor_swigregister(SparseEdgeNZFactor)
 
 class DenseEdgeFactor(CFactorBase):
     __swig_setmethods__ = {}
