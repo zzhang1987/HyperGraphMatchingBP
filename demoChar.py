@@ -1,5 +1,5 @@
 import scipy.io as sio
-import cv2
+#import cv2
 import numpy as np
 import numpy.matlib
 from FactorGraph import *
@@ -11,7 +11,7 @@ def ComputeDistAng(Edges, Pt):
     EEnd = Pt[Edges[1]]
     PtD = (EEnd - EStart).transpose()
     Dist = np.sqrt(np.sum(np.multiply(PtD,PtD), axis=0))
-    angs =  np.arctan(np.divide(PtD[1], PtD[0] + eps))
+    angs =  np.arctan(np.divide(PtD[0], PtD[1] + eps))
     return Dist, angs
 
 def ComputeSim(Edges1, Edges2, Pt1, Pt2):
@@ -31,7 +31,7 @@ def ComputeSim(Edges1, Edges2, Pt1, Pt2):
     Ang1 = np.matlib.repmat(Angs1, NofE2, 1)
     Ang2 = np.matlib.repmat(Angs2, NofE1, 1).transpose()
 
-    Ang = np.abs(Ang1 - Ang2)/(np.max([Ang1.max(),Ang2.max()])+eps)
+    Ang = np.abs(Ang1 - Ang2)
 
     KQ = np.exp(-(Dst+Ang)/2).transpose()
     return KQ
@@ -166,13 +166,13 @@ def RunExp(G1, Pt1, G2, Pt2):
 
 ErrorRate = np.zeros(10)
 
-for idx in range(1):
+for idx in range(4):
     cnt = 0;
     SumErrorRate = 0.0;
     idx1base = (idx ) * 10;
 
-    for d1 in range(2):
-        for d2 in range(d1+1, 2):
+    for d1 in range(10):
+        for d2 in range(d1+1, 10):
             
             data1 = sio.loadmat('./data_chrct/' + str(idx1base+d1+1) +'.mat');
             cnt += 1
@@ -188,16 +188,22 @@ for idx in range(1):
             
             
             G,EdgeSim=ConstructSparseG(G1, Pt1, G2, Pt2)
+            #G.SetVerbost(True)\
+            G11,EdgeSim1 = ConstructSparseG(G1,Pt1,G2,Pt2)
             #G.SetVerbost(True)
             G.Solve(100)
             decode = G.GetDecode()
             ErrAssign = 0.0;
+            GTDecode = intArray(len(G1))
             for xi in range(len(G1)):
                 if(decode[xi] != xi):
                     ErrAssign+=1;
+                GTDecode[xi] = xi
 
             ErrorRate = ErrAssign / len(G1);
             SumErrorRate += ErrorRate
+            rValue = G.ComputeObj(GTDecode)
+
             #print(G.GetDecode())
     print("Char", idx, " Error Rate ", 1 - SumErrorRate/cnt)
        
