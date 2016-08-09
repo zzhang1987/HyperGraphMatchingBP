@@ -684,8 +684,8 @@ class CFactorGraph(_object):
     __getattr__ = lambda self, name: _swig_getattr(self, CFactorGraph, name)
     __repr__ = _swig_repr
 
-    def SetVerbost(self, verbose):
-        return _FactorGraph.CFactorGraph_SetVerbost(self, verbose)
+    def SetVerbose(self, verbose):
+        return _FactorGraph.CFactorGraph_SetVerbose(self, verbose)
 
     def AddAuctionFactor(self):
         return _FactorGraph.CFactorGraph_AddAuctionFactor(self)
