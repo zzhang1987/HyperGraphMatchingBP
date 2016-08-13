@@ -22,6 +22,7 @@
 #include <boost/functional/hash.hpp>
 #include "PRTypes.h"
 #include "Factor.h"
+#include "FactorGraphStore.h"
 #include "Auction.h"
 
 
@@ -207,7 +208,11 @@ namespace zzhang{
 		    m_Factors[i]->Print();
 	       }
 	  }
-	  
+
+
+     public:
+	  FactorGraphDualStore *StoreDual();
+	  bool ReStoreDual(FactorGraphDualStore *store);
      };
 }
 

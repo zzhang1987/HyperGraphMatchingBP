@@ -21,10 +21,11 @@
 #include <utility>
 #include <unordered_map>
 #include <vector>
-#include "PRTypes.h"
 #include <iostream>
 #include <cstring>
 
+#include "PRTypes.h"
+#include "FactorStore.h"
 
 #define FACTOR_INVALID -1
 #define FACTOR_NODE_ID 1
@@ -52,6 +53,7 @@ struct SparseEdgeInternal{
 
 
 namespace zzhang{
+     class CFactorGraph;
      /**
       * Base class for a factor.
       */
@@ -62,8 +64,8 @@ namespace zzhang{
 	   */
 	  typedef CFactorBase* (*FactorCreator)(const std::vector<int>& nodes,
 						void *data);
-
-	       
+	  
+	  friend class CFactorGraph;
 	  /**
 	   * Register a factor creator.
 	   */
@@ -112,8 +114,18 @@ namespace zzhang{
 	   * Print instrinsic information of the factor.
 	   */
 	  virtual void Print() = 0;
+	  /**
+	   * Is Generic Factor of Sparse Factor
+	   */
 	  virtual bool IsGeneralFactor() = 0;
+	  /**
+	   * Return a vector, which contains all the nodes included in the factor
+	   */
 	  virtual bool GetIncludedNodes(std::vector<int>& nodes) = 0;
+
+	  /**
+	   * return size of Factor
+	   */
 	  int size()
 	  {
 	       std::vector<int> nodes;
@@ -124,9 +136,26 @@ namespace zzhang{
 	   * Desctrotor;
 	   */
 	  virtual ~CFactorBase() {};
+
      private:
+	  /**
+	   * Store current dual variable
+	   */
+	  virtual zzhang::FactorStore* Store() = 0;
+	  /**
+	   * Restore current dual variable
+	   */
+	  virtual bool ReStore(zzhang::FactorStore *data) = 0;
+
+     private:
+	  /**
+	   * depreated.
+	   */
 	  static std::unordered_map<int, FactorCreator > FactorCreators;
      public:
+	  /**
+	   * depreated
+	   */
 	  static const int FactorID = FACTOR_INVALID;
      };
      class CFactorGraph;
@@ -186,6 +215,9 @@ namespace zzhang{
 	       }
 	       std::cout << std::endl;
 	  }
+     private:
+	  virtual FactorStore *Store();
+	  virtual bool ReStore(FactorStore* data);
      private:
 	  void FindLocalMax()
 	  {
@@ -259,6 +291,8 @@ namespace zzhang{
 	       delete []mi;
 	       delete []mj;
 	       delete []nnzIdx;
+	       delete []bitmp;
+	       delete []bjtmp;
 	  }
 	  virtual Real Primal(int *decode){
 	       return bij[decode[ei] * NofStates[ej] + decode[ej]] - mi[decode[ei]] - mj[decode[ej]];
@@ -356,10 +390,20 @@ namespace zzhang{
 		    std::cout << std::endl;
 	       }
 	  }
+     private:
+	  /**
+	   * Store current dual variable
+	   */
+	  virtual FactorStore* Store();
+	  /**
+	   * Restore current dual variable
+	   */
+	  virtual bool ReStore(FactorStore *data);
+
      };
 
 
-          class SparseEdgeNZFactor : public SparseEdgeFactor
+     class SparseEdgeNZFactor : public SparseEdgeFactor
      {
      private:
 	  friend class CFactorGraph;
@@ -495,6 +539,16 @@ namespace zzhang{
 		    std::cout << std::endl;
 	       }
 	  }
+     private:
+	  /**
+	   * Store current dual variable
+	   */
+	  virtual FactorStore* Store();
+	  /**
+	   * Restore current dual variable
+	   */
+	  virtual bool ReStore(FactorStore *data);
+
 	  
      };
 
@@ -607,8 +661,18 @@ namespace zzhang{
 	  }
      public:
 	  static const int FactorID = FACTOR_EDGE_ID;
+     private:
+	  /**
+	   * Store current dual variable
+	   */
+	  virtual FactorStore* Store();
+	  /**
+	   * Restore current dual variable
+	   */
+	  virtual bool ReStore(FactorStore *data);
 
      };
+     
 }
 
 #endif // FACTOR_H

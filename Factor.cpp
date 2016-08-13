@@ -36,3 +36,60 @@ zzhang::DenseEdgeFactor::DenseEdgeFactor(const void* InParam, const ExternalData
      bij = new Real[xijMax];
      memcpy(bij, internal->data, sizeof(Real) * xijMax);
 }
+
+zzhang::FactorStore* zzhang::NodeFactor::Store(){
+     zzhang::FactorStore *store = new zzhang::FactorStore(m_NofStates);
+     memcpy(store->data, m_bi, sizeof(Real) * m_NofStates);
+     return store;
+}
+
+bool zzhang::NodeFactor::ReStore(zzhang::FactorStore *store)
+{
+     if(!store) return false;
+     memcpy(m_bi, store->data, sizeof(Real) * m_NofStates);
+     return store;
+}
+
+zzhang::FactorStore* zzhang::SparseEdgeFactor::Store(){
+     zzhang::FactorStore *store = new zzhang::FactorStore(NofStates[ei] + NofStates[ej]);
+     memcpy(store->data, mi, sizeof(Real) * NofStates[ei]);
+     memcpy(store->data + NofStates[ei], mj, sizeof(Real) * NofStates[ej]);
+     return store;
+}
+
+bool zzhang::SparseEdgeFactor::ReStore(zzhang::FactorStore *store)
+{
+     if(!store) return false;
+     memcpy(mi, store->data, sizeof(Real) * NofStates[ei]);
+     memcpy(mj, store->data + NofStates[ei], sizeof(Real) * NofStates[ej]);
+     return true;
+}
+
+
+zzhang::FactorStore* zzhang::SparseEdgeNZFactor::Store(){
+     zzhang::FactorStore *store = new zzhang::FactorStore(NofStates[ei] + NofStates[ej]);
+     memcpy(store->data, mi, sizeof(Real) * NofStates[ei]);
+     memcpy(store->data + NofStates[ei], mj, sizeof(Real) * NofStates[ej]);
+     return store;
+}
+
+bool zzhang::SparseEdgeNZFactor::ReStore(zzhang::FactorStore *store)
+{
+     if(!store) return false;
+     memcpy(mi, store->data, sizeof(Real) * NofStates[ei]);
+     memcpy(mj, store->data + NofStates[ei], sizeof(Real) * NofStates[ej]);
+     return true;
+}
+
+zzhang::FactorStore * zzhang::DenseEdgeFactor::Store(){
+     zzhang::FactorStore *store = new FactorStore(NofStates[ei] * NofStates[ej]);
+     memcpy(store->data, bij, sizeof(Real) * NofStates[ei] * NofStates[ej]);
+     return store;
+}
+
+bool zzhang::DenseEdgeFactor::ReStore(zzhang::FactorStore *store)
+{
+     if(!store) return false;
+     memcpy(bij, store->data, sizeof(Real) * NofStates[ei] * NofStates[ej]);
+     return true;
+}

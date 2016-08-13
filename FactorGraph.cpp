@@ -171,3 +171,30 @@ bool zzhang::CFactorGraph::AddEdge(int ei, int ej, double *data)
      }
 }
 
+
+
+zzhang::FactorGraphDualStore * zzhang::CFactorGraph::StoreDual(){
+     FactorGraphDualStore *store = new FactorGraphDualStore(m_NofNodes, m_Factors.size());
+     for(int i = 0; i < m_NodeFactors.size(); i++)
+     {
+	  store->NodeStores[i] = m_NodeFactors[i].Store();
+     }
+     for(int j = 0; j < m_Factors.size(); j++)
+     {
+	  store->FactorStores[j] = m_Factors[j]->Store();
+     }
+}
+
+
+bool zzhang::CFactorGraph::ReStoreDual(FactorGraphDualStore *store)
+{
+     if(store == NULL) return false;
+     for(int i = 0; i < m_NodeFactors.size(); i++)
+     {
+	  m_NodeFactors[i].ReStore(store->NodeStores[i]);
+     }
+     for(int j = 0; j < m_Factors.size(); j++)
+     {
+	  m_Factors[j]->ReStore(store->FactorStores[j]);
+     }
+}

@@ -3,6 +3,8 @@
 %{
      #include "FactorGraph.h"
      #include "Factor.h"
+     #include "FactorStore.h"
+     #include "FactorGraphStore.h"
 %}
 
 %include "std_vector.i"
@@ -21,5 +23,8 @@ namespace std{
   %template(VecVecdouble) vector< vector<double> >;
  }
 
+
+%include "FactorStore.h"
+%include "FactorGraphStore.h"
 %include "FactorGraph.h"
 %include "Factor.h"

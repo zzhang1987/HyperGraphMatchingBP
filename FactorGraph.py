@@ -684,6 +684,56 @@ class VecVecdouble(_object):
 VecVecdouble_swigregister = _FactorGraph.VecVecdouble_swigregister
 VecVecdouble_swigregister(VecVecdouble)
 
+FACTORSTORE_H = _FactorGraph.FACTORSTORE_H
+class FactorStore(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, FactorStore, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, FactorStore, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["data"] = _FactorGraph.FactorStore_data_set
+    __swig_getmethods__["data"] = _FactorGraph.FactorStore_data_get
+    if _newclass:
+        data = _swig_property(_FactorGraph.FactorStore_data_get, _FactorGraph.FactorStore_data_set)
+
+    def __init__(self, size):
+        this = _FactorGraph.new_FactorStore(size)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _FactorGraph.delete_FactorStore
+    __del__ = lambda self: None
+FactorStore_swigregister = _FactorGraph.FactorStore_swigregister
+FactorStore_swigregister(FactorStore)
+
+FACTORGRAPHSTORE_H = _FactorGraph.FACTORGRAPHSTORE_H
+class FactorGraphDualStore(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, FactorGraphDualStore, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, FactorGraphDualStore, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["NodeStores"] = _FactorGraph.FactorGraphDualStore_NodeStores_set
+    __swig_getmethods__["NodeStores"] = _FactorGraph.FactorGraphDualStore_NodeStores_get
+    if _newclass:
+        NodeStores = _swig_property(_FactorGraph.FactorGraphDualStore_NodeStores_get, _FactorGraph.FactorGraphDualStore_NodeStores_set)
+    __swig_setmethods__["FactorStores"] = _FactorGraph.FactorGraphDualStore_FactorStores_set
+    __swig_getmethods__["FactorStores"] = _FactorGraph.FactorGraphDualStore_FactorStores_get
+    if _newclass:
+        FactorStores = _swig_property(_FactorGraph.FactorGraphDualStore_FactorStores_get, _FactorGraph.FactorGraphDualStore_FactorStores_set)
+
+    def __init__(self, NofNodes, NofFactors):
+        this = _FactorGraph.new_FactorGraphDualStore(NofNodes, NofFactors)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _FactorGraph.delete_FactorGraphDualStore
+    __del__ = lambda self: None
+FactorGraphDualStore_swigregister = _FactorGraph.FactorGraphDualStore_swigregister
+FactorGraphDualStore_swigregister(FactorGraphDualStore)
+
 FACTORGRAPH_H = _FactorGraph.FACTORGRAPH_H
 class CFactorGraph(_object):
     __swig_setmethods__ = {}
@@ -743,6 +793,12 @@ class CFactorGraph(_object):
 
     def PrintFactorInfo(self):
         return _FactorGraph.CFactorGraph_PrintFactorInfo(self)
+
+    def StoreDual(self):
+        return _FactorGraph.CFactorGraph_StoreDual(self)
+
+    def ReStoreDual(self, store):
+        return _FactorGraph.CFactorGraph_ReStoreDual(self, store)
 CFactorGraph_swigregister = _FactorGraph.CFactorGraph_swigregister
 CFactorGraph_swigregister(CFactorGraph)
 
