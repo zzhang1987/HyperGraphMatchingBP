@@ -83,7 +83,7 @@ namespace zzhang{
 	  double Dual;
      public:
 
-	  void SetVerbost(bool verbose){
+	  void SetVerbose(bool verbose){
 	       m_verbose = verbose;
 	  }
 	  

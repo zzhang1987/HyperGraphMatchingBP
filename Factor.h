@@ -298,7 +298,7 @@ namespace zzhang{
 	       return bij[decode[ei] * NofStates[ej] + decode[ej]] - mi[decode[ei]] - mj[decode[ej]];
 	  }
 	  virtual Real Dual(){
-	       return bij[m_LocalMax] - bi[LocalMaxXi] - bj[LocalMaxXj];
+	       return bij[m_LocalMax] - mi[LocalMaxXi] - mj[LocalMaxXj];
 	  }
 	  
 	  virtual bool IsGeneralFactor(){
@@ -414,7 +414,7 @@ namespace zzhang{
 	       return bij[decode[ei] * NofStates[ej] + decode[ej]] - mi[decode[ei]] - mj[decode[ej]];
 	  }
 	  virtual Real Dual(){
-	       return bij[m_LocalMax] - bi[LocalMaxXi] - bj[LocalMaxXj];
+	       return bij[m_LocalMax] - mi[LocalMaxXi] - mj[LocalMaxXj];
 	  }
 	  
 	  virtual bool IsGeneralFactor(){

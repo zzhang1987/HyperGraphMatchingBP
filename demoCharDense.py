@@ -27,15 +27,15 @@ for idx in range(1):
             I2 = np.array(data2['I'])
             Pt2 = np.array(data2['Pt'])
 
-            G = ConstructSparseG(G1, Pt1, G2, Pt2)
+            #G = ConstructSparseG(G1, Pt1, G2, Pt2)
             # G.SetVerbost(True)\
-            #dG = ConstructDenseG(G1, Pt1, G2, Pt2)
+            dG = ConstructDenseG(G1, Pt1, G2, Pt2)
             # G.SetVerbost(True)
-            G.SetVerbose(True)
-            #dG.SetVerbose(True)
-            G.Solve(100)
-            #dG.Solve(100)
-            decode = G.GetDecode()
+            #G.SetVerbose(True)
+            dG.SetVerbose(True)
+            #G.Solve(100)
+            dG.Solve(100)
+            decode = dG.GetDecode()
             ErrAssign = 0.0;
             #GTDecode = intArray(len(G1))
             for xi in range(len(G1)):
