@@ -12,8 +12,8 @@ for idx in range(1):
     SumErrorRate = 0.0;
     idx1base = (idx) * 10;
 
-    for d1 in range(2,3):
-        for d2 in range(d1 + 1, 4):
+    for d1 in range(1,2):
+        for d2 in range(d1 + 1, 3):
 
             data1 = sio.loadmat('./data_chrct/' + str(idx1base + d1 + 1) + '.mat');
             cnt += 1
