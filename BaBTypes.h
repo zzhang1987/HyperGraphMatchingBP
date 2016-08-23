@@ -1,4 +1,4 @@
-/** PRTypes.h --- 
+/** BaBTypes.h --- 
  *
  * Copyright (C) 2016 Zhen Zhang
  *
@@ -14,38 +14,15 @@
  */
 
 
-#ifndef PRTYPES_H
-#define PRTYPES_H 1
-
-#define Real double
-#include <vector>
-#include <cassert>
-#include <limits>
-
-class CFactorBase;
+#ifndef BABTYPES_H
+#define BABTYPES_H 1
 
 namespace zzhang{
-     class CFactorBase;
+     class MostFractionalNodes{
+     public:
+	  int Nodes;
+	  int States;
+	  double gap;
+     };
 }
-
-typedef struct _ExternalData{
-     int NofNodes;
-     int *NofStates;
-     std::vector<zzhang::CFactorBase *> SubFactors; 
-} ExternalData;
-
-
-
-typedef struct _FactorCreatorData{
-     void *InternalData;
-     ExternalData *ExtData;
-} FactorCreatorData;
-
-
-namespace zzhang{
-     const double DBL_MAX = 100000;
-}
-
-//typedef double Real;
-
-#endif // PRTYPES_H
+#endif // BABTYPES_H

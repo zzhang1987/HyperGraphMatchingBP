@@ -44,6 +44,7 @@ zzhang::CFactorGraph::CFactorGraph(int NofNodes, int *NofStates)
      auFactor = NULL;
      srand(123456);
      m_verbose = false;
+     Evid = std::vector<int> (NofNodes, 0);
 }
 
 
@@ -183,6 +184,10 @@ zzhang::FactorGraphDualStore * zzhang::CFactorGraph::StoreDual(){
      {
 	  store->FactorStores[j] = m_Factors[j]->Store();
      }
+     if(auFactor) store->AuctionStore = auFactor->Store();
+     store->Evid = Evid;
+     return store;
+     
 }
 
 
@@ -197,4 +202,43 @@ bool zzhang::CFactorGraph::ReStoreDual(FactorGraphDualStore *store)
      {
 	  m_Factors[j]->ReStore(store->FactorStores[j]);
      }
+     if(auFactor) auFactor->ReStore(store->AuctionStore);
+     Evid = store->Evid;
+}
+
+
+void zzhang::CFactorGraph::UpdateMessages()
+{
+           int start = rand();
+
+	   for(int ii = 0; ii < m_Factors.size(); ii++)
+	   {
+		int i = (ii + start) % m_Factors.size();
+		m_Factors[i]->UpdateMessages();
+	   }
+	   if(auFactor)
+	   {
+		auFactor->Auction();
+	   }
+	   Dual = 0.0;
+	   for(int i = 0; i < m_NofNodes; i++)
+	   {
+		m_CurrentDecode[i] = m_NodeFactors[i].m_LocalMax;
+		Dual += m_bi[i][m_CurrentDecode[i]];
+	   }
+	   //std::cout << "Dual Here1 " << Dual << std::endl;
+	   if(auFactor) Dual += auFactor->SumPrice;
+	   
+	   //std::cout << "Dual Here2 " << Dual << std::endl;
+	   double Primal = Dual;
+	   for(int i = 0; i <m_Factors.size(); i++)
+	   {
+		Primal += m_Factors[i]->Primal(m_CurrentDecode);
+	   }
+	   if(Primal > BestDecodeV)
+	   {
+		BestDecodeV = Primal;
+		memcpy(m_BestDecode, m_CurrentDecode, sizeof(int) * m_NofNodes);
+	   }
+	   if(m_verbose) std::cout << "Current Dual " << Dual << " Current Primal " << BestDecodeV ;
 }

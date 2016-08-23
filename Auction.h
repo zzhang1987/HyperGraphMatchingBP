@@ -18,6 +18,7 @@
 #define AUCTION_H 1
 #include "PRTypes.h"
 #include "Factor.h"
+#include "FactorStore.h"
 #include <vector>
 #include <cassert>
 
@@ -32,9 +33,11 @@ namespace zzhang{
 	  Real *prices;
 	  Real SumPrice;
 	  std::vector<NodeFactor>& NodeFactors;
+	  std::vector<int> & Evid;
 	  int *AssignMent;
+	  std::vector<bool> IsOccupied;
 	  friend class CFactorGraph;
-	  CAuctionFactor(int N, int *States, Real **pi, std::vector<NodeFactor>& NFactors): NofNodes(N),NofStates(States), bi(pi), NodeFactors(NFactors)
+     CAuctionFactor(int N, int *States, Real **pi, std::vector<NodeFactor>& NFactors, std::vector<int>& evid): NofNodes(N),NofStates(States), bi(pi), NodeFactors(NFactors), Evid(evid)
 	       {
 		    assert(N > 0);
 		    prices = new Real[N];
@@ -42,17 +45,48 @@ namespace zzhang{
 		    memset(prices, 0, sizeof(Real) * N);
 		    memset(AssignMent, -1, sizeof(int) * N);
 	       }
+	  ~CAuctionFactor(){
+	       delete[] prices;
+	       delete[] AssignMent;
+	  }
+
+	  FactorStore* Store(){
+	       FactorStore *store = new FactorStore(NofNodes);
+	       memcpy(store->data, prices, sizeof(Real) * NofNodes);
+	       return store;
+	  }
+	  bool ReStore(FactorStore *store){
+	       if(!store) return false;
+	       memcpy(prices, store->data, sizeof(Real) * NofNodes);
+	       SumPrice = 0;
+	       for(int i = 0; i < NofNodes; i++) SumPrice += prices[i];
+	       return true;
+	  }
 
 	  void Auction(){
-	       for(int i = 0; i < NofNodes; i++)
+	       // IsOccupied = std::vector<bool> (NofNodes, false);
+	      
+	       for(int j = 0; j < NofNodes; j++)
 	       {
-		    for(int j = 0; j < NofNodes; j++)
+		    for(int i = 0; i < NofNodes; i++)
 		    {
 			 bi[i][j] += prices[j];
 		    }
+		    //prices[j] = 0.0;
 	       }
+#if 0
+	       for(int i = 0; i < NofNodes; i++)
+	       {
+		    if(Evid[i] > 0)
+		    {
+			 int j = Evid[i] - 1;
+			 if(IsOccupied[j]) return false;
+			 IsOccupied[j] = true;
+		    }
+	       }
+#endif	       
 	       double epsilon = 1.0;
-	       while(epsilon > 1e-6)
+	       while(epsilon > 1e-5)
 	       {
 		    memset(AssignMent, -1, sizeof(int) * NofNodes);
 		    while(1){
@@ -71,15 +105,20 @@ namespace zzhang{
 	       }
 
 	       SumPrice = 0.0;
+	       //  std::cout << "Prices :" << std::endl;
 	       for(int i = 0; i < NofNodes; i++)
 	       {
 		    NodeFactors[i].m_LocalMax = AssignMent[i];
 		    SumPrice += prices[i];
+		    //std::cout << prices[i] << " ";
+
 		    for(int j = 0; j < NofNodes; j++)
 		    {
 			 bi[i][j] -= prices[j];
 		    }
 	       }
+	       //std::cout << std::endl;
+	       //return true;
 	       
 	  }
 
@@ -87,16 +126,30 @@ namespace zzhang{
 	       std::vector<int> tmpBidded;
 	       std::vector<double> tmpBids;
 	       std::vector<int> unAssig;
+#if 0
 	       for(int i = 0; i < NofNodes; i++)
 	       {
-		    if(AssignMent[i] == -1)
+		    if(Evid[i] > 0)
+		    {
+			 int j = Evid[i] - 1;
+			 AssignMent[i] = j;
+			 prices[j] = 0;
+			 //std::cout << "i " << i << " j " << j << std::endl;
+		    }
+		    
+	       }
+#endif
+	       for(int i = 0; i < NofNodes; i++)
+	       {
+		    if(AssignMent[i] == -1 /*&& Evid[i] <= 0*/)
 		    {
 			 unAssig.push_back(i);
-			 double optValForI = -DBL_MAX;
-			 double secOptValForI = -DBL_MAX;
+			 double optValForI = -1e20;
+			 double secOptValForI = -1e20;
 			 int optObjForI, secOptObjForI;
 			 for(int j = 0; j < NofNodes; j++)
 			 {
+			      //if(IsOccupied[j]) continue;
 			      double curVal = bi[i][j] - prices[j];
 			      if(curVal > optValForI)
 			      {
@@ -116,15 +169,16 @@ namespace zzhang{
 			 tmpBids.push_back(bidForI);
 		    }
 	       }
-
+	       
 	       for(int j = 0; j <NofNodes; j++){
+		    //if(IsOccupied[j]) continue;
 		    std::vector<int> indices = getIndicesWithVal(&tmpBidded, j);
 		    if(indices.size() != 0)
 		    {
 			 /* Need the highest bid for object j */
-			 double highestBidForJ = -DBL_MAX;
-			 int i_j;
-			 for (int i = 0; i < indices.size(); i++)
+			 double highestBidForJ = tmpBids[indices[0]];
+			 int i_j = indices[0];
+			 for (int i = 1; i < indices.size(); i++)
 			 {
 			      double curVal = tmpBids.at(indices.at(i));
 			      if (curVal > highestBidForJ)

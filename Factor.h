@@ -409,7 +409,7 @@ namespace zzhang{
 	  friend class CFactorGraph;
 	  SparseEdgeNZFactor(const void * InParam, const ExternalData* OuParam):SparseEdgeFactor(InParam, OuParam){
 	  }
-
+	  virtual ~SparseEdgeNZFactor(){}
 	  virtual Real Primal(int *decode){
 	       return bij[decode[ei] * NofStates[ej] + decode[ej]] - mi[decode[ei]] - mj[decode[ej]];
 	  }
@@ -418,7 +418,7 @@ namespace zzhang{
 	  }
 	  
 	  virtual bool IsGeneralFactor(){
-	       return true;
+	       return false;
 	  }
 	  
 	  virtual void UpdateMessages(){

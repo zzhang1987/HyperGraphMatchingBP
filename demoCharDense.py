@@ -4,16 +4,20 @@ import numpy as np
 import numpy.matlib
 from FactorGraph import *
 from ChineseChar import *
+from BaBSolver import *
 
 ErrorRate = np.zeros(10)
 
-for idx in range(1):
+for idx in range(4):
     cnt = 0;
     SumErrorRate = 0.0;
     idx1base = (idx) * 10;
-
-    for d1 in range(2,3):
-        for d2 in range(d1 + 1, 4):
+    Time_Elaspled = []
+    Accuracy = []
+    Objs = []
+    AllTime = 0.0;
+    for d1 in range(10):
+        for d2 in range(d1 + 1, 10):
 
             data1 = sio.loadmat('./data_chrct/' + str(idx1base + d1 + 1) + '.mat');
             cnt += 1
@@ -34,18 +38,29 @@ for idx in range(1):
             #G.SetVerbose(True)
             dG.SetVerbose(True)
             #G.Solve(100)
-            dG.Solve(100)
-            decode = dG.GetDecode()
+            dG.SetVerbose(False)
+            # G.Solve(5)
+            # GStore = G.StoreDual();
+            res = BaBSolver(dG, 600, 5, 0.00005, False);
+            # print("Time=%.4f" % res.Time)
+            # dG.SetVerbose(True)
+
+            AllTime += res.Time
+
+
+
+
+            decode = res.Decode
             ErrAssign = 0.0;
-            #GTDecode = intArray(len(G1))
+            # GTDecode = intArray(len(G1))
             for xi in range(len(G1)):
                 if (decode[xi] != xi):
                     ErrAssign += 1;
-                #GTDecode[xi] = xi
+                    # GTDecode[xi] = xi
 
             ErrorRate = ErrAssign / len(G1);
             SumErrorRate += ErrorRate
-            #rValue = G.ComputeObj(GTDecode)
+            # rValue = G.ComputeObj(GTDecode)
 
             # print(G.GetDecode())
-    print("Char", idx, " Error Rate ", 1 - SumErrorRate / cnt)
+    print("Char", idx, " Accuracy ", 1 - SumErrorRate / cnt, "Time ", AllTime/cnt)

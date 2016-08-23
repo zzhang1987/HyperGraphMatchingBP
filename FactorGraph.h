@@ -24,7 +24,7 @@
 #include "Factor.h"
 #include "FactorGraphStore.h"
 #include "Auction.h"
-
+#include "BaBTypes.h"
 
 
 namespace zzhang{
@@ -72,25 +72,36 @@ namespace zzhang{
 	   * Best Decode
 	   */
 	  int *m_BestDecode;
-	  
+	  /**
+	   * Current Best Primal
+	   */
 	  Real BestDecodeV;
 	  /**
 	   * Special Factor, Auction Factor
 	   */
 
 	  CAuctionFactor * auFactor;
-	  
+	  /**
+	   * Current Dual Objective
+	   */
 	  double Dual;
+
+	  /**
+	   * Current Evindence
+	   */
+	  std::vector<int> Evid;
      public:
 
 	  void SetVerbose(bool verbose){
 	       m_verbose = verbose;
 	  }
-	  
+	  /**
+	   * Add an auction factor. 
+	   */
 	  void AddAuctionFactor()
 	  {
 	       auFactor = new CAuctionFactor(m_NofNodes, m_NofStates,
-					     m_bi, m_NodeFactors);
+					     m_bi, m_NodeFactors, Evid);
 	  }
 	  
 	  virtual ~CFactorGraph(){
@@ -135,39 +146,15 @@ namespace zzhang{
 		    if(m_verbose) std::cout << " Time " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << std::endl;
 		    if(fabs(Dual - BestDecodeV) < 1e-4)
 			 break;
+		    if(Dual < BestDecodeV)
+			 break;
 
 	       }
 	  }
-	  
-	  void UpdateMessages()
-	  {
-	       int start = rand();
-
-	       for(int ii = 0; ii < m_Factors.size(); ii++)
-	       {
-		    int i = (ii + start) % m_Factors.size();
-		    m_Factors[i]->UpdateMessages();
-	       }
-	       if(auFactor) auFactor->Auction();
-	       Dual = 0.0;
-	       for(int i = 0; i < m_NofNodes; i++)
-	       {
-		    m_CurrentDecode[i] = m_NodeFactors[i].m_LocalMax;
-		    Dual += m_bi[i][m_CurrentDecode[i]];
-	       }
-	       if(auFactor) Dual += auFactor->SumPrice;
-	       double Primal = Dual;
-	       for(int i = 0; i <m_Factors.size(); i++)
-	       {
-		    Primal += m_Factors[i]->Primal(m_CurrentDecode);
-	       }
-	       if(Primal > BestDecodeV)
-	       {
-		    BestDecodeV = Primal;
-		    memcpy(m_BestDecode, m_CurrentDecode, sizeof(int) * m_NofNodes);
-	       }
-	       if(m_verbose) std::cout << "Current Dual " << Dual << " Current Primal " << BestDecodeV ;
-	  }
+	  /**
+	   * Update messages
+	   */
+	  void UpdateMessages();
 	  
 	  /**
 	   * For debug in python;
@@ -208,8 +195,67 @@ namespace zzhang{
 		    m_Factors[i]->Print();
 	       }
 	  }
+	  bool SetDecode(int NodeId, int Assigned)
+	  {
+	       assert(NodeId >= 0);
+	       if(Evid[NodeId] > 0 && Assigned > 0)
+	       {
+		    if(Evid[NodeId] != Assigned) return false;
+	       }
+	       if(Evid[NodeId] > 0 && Assigned < 0)
+	       {
+		    if(Evid[NodeId] == -Assigned) return false;
+	       }
+	       Evid[NodeId] = Assigned;
+	       if(Assigned > 0){
+		    Assigned--;
+		    assert(m_NofStates[NodeId] > Assigned);
+		    for(int i = 0; i < m_NofStates[NodeId]; i++)
+		    {
+			 if(i != Assigned) m_bi[NodeId][i] -= 30;
+		    }
+	       }
+	       else{
+		    Assigned = -Assigned;
+		    Assigned--;
+		    assert(m_NofStates[NodeId] > Assigned);
+		    m_bi[NodeId][Assigned] -= 30;
+	       }
+	       return true;
+	  }
 
+	  double DualValue(){return Dual;}
+	  double PrimalValue(){return BestDecodeV;}
 
+	  MostFractionalNodes FindMostFracNodes()
+	  {
+	       MostFractionalNodes res;
+	       Real Min_Gap = DBL_MAX;
+	       for(int i = 0; i < m_NofNodes; i++)
+	       {
+		    Real MaxValue = m_NodeFactors[i].Dual();
+		    Real SecMaxValue = -DBL_MAX;
+		    int MaxVID = m_NodeFactors[i].m_LocalMax;
+		    for(int xi = 0; xi < m_NofStates[i]; xi++)
+		    {
+			 
+			 if(xi != MaxVID && m_bi[i][xi] > SecMaxValue)
+			 {
+			      SecMaxValue = m_bi[i][xi];
+			 }
+		    }
+		    Real gap = fabs(MaxValue - SecMaxValue);
+		    if(gap < Min_Gap)
+		    {
+			 Min_Gap = gap;
+			 res.Nodes = i;
+			 res.States = MaxVID;
+			 res.gap = gap;
+		    }
+	       }
+	       return res;
+	  }
+	  
      public:
 	  FactorGraphDualStore *StoreDual();
 	  bool ReStoreDual(FactorGraphDualStore *store);

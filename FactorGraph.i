@@ -1,6 +1,7 @@
 %module FactorGraph
 
 %{
+     #include "BaBTypes.h"
      #include "FactorGraph.h"
      #include "Factor.h"
      #include "FactorStore.h"
@@ -22,9 +23,16 @@ namespace std{
   %template(VecDouble) vector<double>;
   %template(VecVecdouble) vector< vector<double> >;
  }
+%typemap(newfree) FactorGraphDualStore * "delete $1;";
+%newobject zzhang::CFactorGraph::StoreDual;
 
 
+%include "BaBTypes.h"
 %include "FactorStore.h"
 %include "FactorGraphStore.h"
 %include "FactorGraph.h"
 %include "Factor.h"
+
+
+
+
