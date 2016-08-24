@@ -42,7 +42,7 @@ zzhang::CFactorGraph::CFactorGraph(int NofNodes, int *NofStates)
      memset(m_CurrentDecode, 0, sizeof(int) * NofNodes);
      memset(m_BestDecode, 0, sizeof(int) * NofNodes);
      auFactor = NULL;
-     srand(123456);
+     srandom(32428328);
      m_verbose = false;
      Evid = std::vector<int> (NofNodes, 0);
 }
@@ -209,7 +209,7 @@ bool zzhang::CFactorGraph::ReStoreDual(FactorGraphDualStore *store)
 
 void zzhang::CFactorGraph::UpdateMessages()
 {
-           int start = rand();
+           int start = random();
 
 	   for(int ii = 0; ii < m_Factors.size(); ii++)
 	   {

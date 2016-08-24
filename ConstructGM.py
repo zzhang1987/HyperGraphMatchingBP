@@ -54,7 +54,7 @@ def ConstructG(Edges1, Edges2, KP, KQ, isSparse):
             EPotentials[xij] += EdgeSim[i][j]
             EPotentials[xji] += EdgeSim[revIdx][j]
 
-            EPotentials[xi * NofNodes + xi] = -10000
+            EPotentials[xi * NofNodes + xi] = -100.0
         if(isSparse):
             G.AddSparseEdgeNZ(ei, ej, EPotentials, mi, mj, NNZs, nnzIdx)
         else:

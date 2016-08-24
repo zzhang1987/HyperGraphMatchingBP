@@ -29,8 +29,8 @@ def RunCar(id, outs, IsSparse):
 
 
 if __name__ == '__main__':
-    for nOus in range(21):
-        for idx in range(1,30):
+    for nOus in range(1):
+        for idx in range(4,5):
             print("Compute for Instance %d Outliers %d" % (idx, nOus))
             ResFname = './Car/CarIDRes' + str(idx) + '_nOut' + str(nOus) + '_' +str(True) + '.mat';
             res1 = RunCar(idx, nOus, True)

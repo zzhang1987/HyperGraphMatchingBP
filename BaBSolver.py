@@ -66,11 +66,11 @@ def BaBSolver(G,outIter, inIter, maxGap, verbose):
 
         MFNode = G.FindMostFracNodes()
         GStore = G.StoreDual()
-        Node1 = BaBNode(GStore,GB,LB,MFNode.Nodes, MFNode.States + 1, MFNode.gap)
         Node2 = BaBNode(GStore,GB,LB,MFNode.Nodes, -(MFNode.States + 1), MFNode.gap)
+        Node1 = BaBNode(GStore,GB,LB,MFNode.Nodes, MFNode.States + 1, MFNode.gap)
 
-        Q.insert(Node1)
         Q.insert(Node2)
+        Q.insert(Node1)
         del cNode
         iter += 1
 

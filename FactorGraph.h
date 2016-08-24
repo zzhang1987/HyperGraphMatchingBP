@@ -137,7 +137,7 @@ namespace zzhang{
 
 	  void Solve(int MaxIter){
 	       const clock_t begin_time = clock();
-
+	       double lastDual = 1e20;
 	       for(int iter=0; iter < MaxIter; iter++)
 	       {
 		    if(m_verbose)
@@ -148,7 +148,9 @@ namespace zzhang{
 			 break;
 		    if(Dual < BestDecodeV)
 			 break;
-
+		    if(fabs(Dual - lastDual) < 1e-3)
+			 break;
+		    lastDual = Dual;
 	       }
 	  }
 	  /**
