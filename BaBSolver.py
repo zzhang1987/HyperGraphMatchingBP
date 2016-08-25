@@ -5,7 +5,6 @@ from BaBNode import *
 from PQueue import *
 
 import time
-from FibonacciHeap import FibHeap
 
 class BaBRes:
     __slots__ = ["Value","Decode", "Time"]
