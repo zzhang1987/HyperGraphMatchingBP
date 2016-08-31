@@ -673,7 +673,16 @@ namespace zzhang{
 
      };
 
-     class CBudgetFactor(){
+     class CBudgetFactor : public CFactorBase
+     {
+     private:
+	  friend CFactorGraph;
+	  Real **bi;
+	  int* AssignMents;
+	  Real sum;
+	  
+     public:
+	  
      };
      
 }

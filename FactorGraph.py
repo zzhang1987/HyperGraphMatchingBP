@@ -62,10 +62,7 @@ def _swig_setattr_nondynamic(self, class_type, name, value, static=1):
     if method:
         return method(self, value)
     if (not static):
-        if _newclass:
-            object.__setattr__(self, name, value)
-        else:
-            self.__dict__[name] = value
+        object.__setattr__(self, name, value)
     else:
         raise AttributeError("You cannot add attributes to %s" % self)
 
@@ -90,19 +87,20 @@ def _swig_repr(self):
         strthis = ""
     return "<%s.%s; %s >" % (self.__class__.__module__, self.__class__.__name__, strthis,)
 
-try:
-    _object = object
-    _newclass = 1
-except __builtin__.Exception:
-    class _object:
-        pass
-    _newclass = 0
 
-class SwigPyIterator(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, SwigPyIterator, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, SwigPyIterator, name)
+def _swig_setattr_nondynamic_method(set):
+    def set_attr(self, name, value):
+        if (name == "thisown"):
+            return self.this.own(value)
+        if hasattr(self, name) or (name == "this"):
+            set(self, name, value)
+        else:
+            raise AttributeError("You cannot add attributes to %s" % self)
+    return set_attr
+
+
+class SwigPyIterator(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
 
     def __init__(self, *args, **kwargs):
         raise AttributeError("No constructor defined - class is abstract")
@@ -162,11 +160,8 @@ class SwigPyIterator(_object):
 SwigPyIterator_swigregister = _FactorGraph.SwigPyIterator_swigregister
 SwigPyIterator_swigregister(SwigPyIterator)
 
-class intArray(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, intArray, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, intArray, name)
+class intArray(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
 
     def __init__(self, nelements):
@@ -186,10 +181,7 @@ class intArray(_object):
 
     def cast(self):
         return _FactorGraph.intArray_cast(self)
-    if _newclass:
-        frompointer = staticmethod(_FactorGraph.intArray_frompointer)
-    else:
-        frompointer = _FactorGraph.intArray_frompointer
+    frompointer = staticmethod(_FactorGraph.intArray_frompointer)
 intArray_swigregister = _FactorGraph.intArray_swigregister
 intArray_swigregister(intArray)
 
@@ -197,11 +189,8 @@ def intArray_frompointer(t):
     return _FactorGraph.intArray_frompointer(t)
 intArray_frompointer = _FactorGraph.intArray_frompointer
 
-class doubleArray(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, doubleArray, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, doubleArray, name)
+class doubleArray(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
 
     def __init__(self, nelements):
@@ -221,10 +210,7 @@ class doubleArray(_object):
 
     def cast(self):
         return _FactorGraph.doubleArray_cast(self)
-    if _newclass:
-        frompointer = staticmethod(_FactorGraph.doubleArray_frompointer)
-    else:
-        frompointer = _FactorGraph.doubleArray_frompointer
+    frompointer = staticmethod(_FactorGraph.doubleArray_frompointer)
 doubleArray_swigregister = _FactorGraph.doubleArray_swigregister
 doubleArray_swigregister(doubleArray)
 
@@ -232,11 +218,8 @@ def doubleArray_frompointer(t):
     return _FactorGraph.doubleArray_frompointer(t)
 doubleArray_frompointer = _FactorGraph.doubleArray_frompointer
 
-class VecInt(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, VecInt, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, VecInt, name)
+class VecInt(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
 
     def iterator(self):
@@ -345,11 +328,8 @@ class VecInt(_object):
 VecInt_swigregister = _FactorGraph.VecInt_swigregister
 VecInt_swigregister(VecInt)
 
-class VecVecInt(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, VecVecInt, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, VecVecInt, name)
+class VecVecInt(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
 
     def iterator(self):
@@ -458,11 +438,8 @@ class VecVecInt(_object):
 VecVecInt_swigregister = _FactorGraph.VecVecInt_swigregister
 VecVecInt_swigregister(VecVecInt)
 
-class VecDouble(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, VecDouble, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, VecDouble, name)
+class VecDouble(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
 
     def iterator(self):
@@ -571,11 +548,8 @@ class VecDouble(_object):
 VecDouble_swigregister = _FactorGraph.VecDouble_swigregister
 VecDouble_swigregister(VecDouble)
 
-class VecVecdouble(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, VecVecdouble, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, VecVecdouble, name)
+class VecVecdouble(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
 
     def iterator(self):
@@ -685,24 +659,12 @@ VecVecdouble_swigregister = _FactorGraph.VecVecdouble_swigregister
 VecVecdouble_swigregister(VecVecdouble)
 
 BABTYPES_H = _FactorGraph.BABTYPES_H
-class MostFractionalNodes(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, MostFractionalNodes, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, MostFractionalNodes, name)
+class MostFractionalNodes(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["Nodes"] = _FactorGraph.MostFractionalNodes_Nodes_set
-    __swig_getmethods__["Nodes"] = _FactorGraph.MostFractionalNodes_Nodes_get
-    if _newclass:
-        Nodes = _swig_property(_FactorGraph.MostFractionalNodes_Nodes_get, _FactorGraph.MostFractionalNodes_Nodes_set)
-    __swig_setmethods__["States"] = _FactorGraph.MostFractionalNodes_States_set
-    __swig_getmethods__["States"] = _FactorGraph.MostFractionalNodes_States_get
-    if _newclass:
-        States = _swig_property(_FactorGraph.MostFractionalNodes_States_get, _FactorGraph.MostFractionalNodes_States_set)
-    __swig_setmethods__["gap"] = _FactorGraph.MostFractionalNodes_gap_set
-    __swig_getmethods__["gap"] = _FactorGraph.MostFractionalNodes_gap_get
-    if _newclass:
-        gap = _swig_property(_FactorGraph.MostFractionalNodes_gap_get, _FactorGraph.MostFractionalNodes_gap_set)
+    Nodes = _swig_property(_FactorGraph.MostFractionalNodes_Nodes_get, _FactorGraph.MostFractionalNodes_Nodes_set)
+    States = _swig_property(_FactorGraph.MostFractionalNodes_States_get, _FactorGraph.MostFractionalNodes_States_set)
+    gap = _swig_property(_FactorGraph.MostFractionalNodes_gap_get, _FactorGraph.MostFractionalNodes_gap_set)
 
     def __init__(self):
         this = _FactorGraph.new_MostFractionalNodes()
@@ -716,16 +678,10 @@ MostFractionalNodes_swigregister = _FactorGraph.MostFractionalNodes_swigregister
 MostFractionalNodes_swigregister(MostFractionalNodes)
 
 FACTORSTORE_H = _FactorGraph.FACTORSTORE_H
-class FactorStore(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, FactorStore, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, FactorStore, name)
+class FactorStore(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["data"] = _FactorGraph.FactorStore_data_set
-    __swig_getmethods__["data"] = _FactorGraph.FactorStore_data_get
-    if _newclass:
-        data = _swig_property(_FactorGraph.FactorStore_data_get, _FactorGraph.FactorStore_data_set)
+    data = _swig_property(_FactorGraph.FactorStore_data_get, _FactorGraph.FactorStore_data_set)
 
     def __init__(self, size):
         this = _FactorGraph.new_FactorStore(size)
@@ -739,28 +695,13 @@ FactorStore_swigregister = _FactorGraph.FactorStore_swigregister
 FactorStore_swigregister(FactorStore)
 
 FACTORGRAPHSTORE_H = _FactorGraph.FACTORGRAPHSTORE_H
-class FactorGraphDualStore(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, FactorGraphDualStore, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, FactorGraphDualStore, name)
+class FactorGraphDualStore(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["NodeStores"] = _FactorGraph.FactorGraphDualStore_NodeStores_set
-    __swig_getmethods__["NodeStores"] = _FactorGraph.FactorGraphDualStore_NodeStores_get
-    if _newclass:
-        NodeStores = _swig_property(_FactorGraph.FactorGraphDualStore_NodeStores_get, _FactorGraph.FactorGraphDualStore_NodeStores_set)
-    __swig_setmethods__["FactorStores"] = _FactorGraph.FactorGraphDualStore_FactorStores_set
-    __swig_getmethods__["FactorStores"] = _FactorGraph.FactorGraphDualStore_FactorStores_get
-    if _newclass:
-        FactorStores = _swig_property(_FactorGraph.FactorGraphDualStore_FactorStores_get, _FactorGraph.FactorGraphDualStore_FactorStores_set)
-    __swig_setmethods__["AuctionStore"] = _FactorGraph.FactorGraphDualStore_AuctionStore_set
-    __swig_getmethods__["AuctionStore"] = _FactorGraph.FactorGraphDualStore_AuctionStore_get
-    if _newclass:
-        AuctionStore = _swig_property(_FactorGraph.FactorGraphDualStore_AuctionStore_get, _FactorGraph.FactorGraphDualStore_AuctionStore_set)
-    __swig_setmethods__["Evid"] = _FactorGraph.FactorGraphDualStore_Evid_set
-    __swig_getmethods__["Evid"] = _FactorGraph.FactorGraphDualStore_Evid_get
-    if _newclass:
-        Evid = _swig_property(_FactorGraph.FactorGraphDualStore_Evid_get, _FactorGraph.FactorGraphDualStore_Evid_set)
+    NodeStores = _swig_property(_FactorGraph.FactorGraphDualStore_NodeStores_get, _FactorGraph.FactorGraphDualStore_NodeStores_set)
+    FactorStores = _swig_property(_FactorGraph.FactorGraphDualStore_FactorStores_get, _FactorGraph.FactorGraphDualStore_FactorStores_set)
+    AuctionStore = _swig_property(_FactorGraph.FactorGraphDualStore_AuctionStore_get, _FactorGraph.FactorGraphDualStore_AuctionStore_set)
+    Evid = _swig_property(_FactorGraph.FactorGraphDualStore_Evid_get, _FactorGraph.FactorGraphDualStore_Evid_set)
 
     def __init__(self, NofNodes, NofFactors):
         this = _FactorGraph.new_FactorGraphDualStore(NofNodes, NofFactors)
@@ -774,11 +715,8 @@ FactorGraphDualStore_swigregister = _FactorGraph.FactorGraphDualStore_swigregist
 FactorGraphDualStore_swigregister(FactorGraphDualStore)
 
 FACTORGRAPH_H = _FactorGraph.FACTORGRAPH_H
-class CFactorGraph(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, CFactorGraph, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, CFactorGraph, name)
+class CFactorGraph(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
 
     def SetVerbose(self, verbose):
@@ -810,10 +748,7 @@ class CFactorGraph(_object):
 
     def AddSparseEdgeNZ(self, ei, ej, data, mi, mj, nnz, nnzIdx):
         return _FactorGraph.CFactorGraph_AddSparseEdgeNZ(self, ei, ej, data, mi, mj, nnz, nnzIdx)
-    __swig_setmethods__["m_verbose"] = _FactorGraph.CFactorGraph_m_verbose_set
-    __swig_getmethods__["m_verbose"] = _FactorGraph.CFactorGraph_m_verbose_get
-    if _newclass:
-        m_verbose = _swig_property(_FactorGraph.CFactorGraph_m_verbose_get, _FactorGraph.CFactorGraph_m_verbose_set)
+    m_verbose = _swig_property(_FactorGraph.CFactorGraph_m_verbose_get, _FactorGraph.CFactorGraph_m_verbose_set)
 
     def Solve(self, MaxIter):
         return _FactorGraph.CFactorGraph_Solve(self, MaxIter)
@@ -860,24 +795,12 @@ FACTOR_EDGE_ID = _FactorGraph.FACTOR_EDGE_ID
 FACTOR_SPARSEEDGE_ID = _FactorGraph.FACTOR_SPARSEEDGE_ID
 FACTOR_GENERAL_ID = _FactorGraph.FACTOR_GENERAL_ID
 FACTOR_GENERALSPARSE_ID = _FactorGraph.FACTOR_GENERALSPARSE_ID
-class EdgeInternal(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, EdgeInternal, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, EdgeInternal, name)
+class EdgeInternal(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["ei"] = _FactorGraph.EdgeInternal_ei_set
-    __swig_getmethods__["ei"] = _FactorGraph.EdgeInternal_ei_get
-    if _newclass:
-        ei = _swig_property(_FactorGraph.EdgeInternal_ei_get, _FactorGraph.EdgeInternal_ei_set)
-    __swig_setmethods__["ej"] = _FactorGraph.EdgeInternal_ej_set
-    __swig_getmethods__["ej"] = _FactorGraph.EdgeInternal_ej_get
-    if _newclass:
-        ej = _swig_property(_FactorGraph.EdgeInternal_ej_get, _FactorGraph.EdgeInternal_ej_set)
-    __swig_setmethods__["data"] = _FactorGraph.EdgeInternal_data_set
-    __swig_getmethods__["data"] = _FactorGraph.EdgeInternal_data_get
-    if _newclass:
-        data = _swig_property(_FactorGraph.EdgeInternal_data_get, _FactorGraph.EdgeInternal_data_set)
+    ei = _swig_property(_FactorGraph.EdgeInternal_ei_get, _FactorGraph.EdgeInternal_ei_set)
+    ej = _swig_property(_FactorGraph.EdgeInternal_ej_get, _FactorGraph.EdgeInternal_ej_set)
+    data = _swig_property(_FactorGraph.EdgeInternal_data_get, _FactorGraph.EdgeInternal_data_set)
 
     def __init__(self):
         this = _FactorGraph.new_EdgeInternal()
@@ -890,40 +813,16 @@ class EdgeInternal(_object):
 EdgeInternal_swigregister = _FactorGraph.EdgeInternal_swigregister
 EdgeInternal_swigregister(EdgeInternal)
 
-class SparseEdgeInternal(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, SparseEdgeInternal, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, SparseEdgeInternal, name)
+class SparseEdgeInternal(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["ei"] = _FactorGraph.SparseEdgeInternal_ei_set
-    __swig_getmethods__["ei"] = _FactorGraph.SparseEdgeInternal_ei_get
-    if _newclass:
-        ei = _swig_property(_FactorGraph.SparseEdgeInternal_ei_get, _FactorGraph.SparseEdgeInternal_ei_set)
-    __swig_setmethods__["ej"] = _FactorGraph.SparseEdgeInternal_ej_set
-    __swig_getmethods__["ej"] = _FactorGraph.SparseEdgeInternal_ej_get
-    if _newclass:
-        ej = _swig_property(_FactorGraph.SparseEdgeInternal_ej_get, _FactorGraph.SparseEdgeInternal_ej_set)
-    __swig_setmethods__["data"] = _FactorGraph.SparseEdgeInternal_data_set
-    __swig_getmethods__["data"] = _FactorGraph.SparseEdgeInternal_data_get
-    if _newclass:
-        data = _swig_property(_FactorGraph.SparseEdgeInternal_data_get, _FactorGraph.SparseEdgeInternal_data_set)
-    __swig_setmethods__["mi"] = _FactorGraph.SparseEdgeInternal_mi_set
-    __swig_getmethods__["mi"] = _FactorGraph.SparseEdgeInternal_mi_get
-    if _newclass:
-        mi = _swig_property(_FactorGraph.SparseEdgeInternal_mi_get, _FactorGraph.SparseEdgeInternal_mi_set)
-    __swig_setmethods__["mj"] = _FactorGraph.SparseEdgeInternal_mj_set
-    __swig_getmethods__["mj"] = _FactorGraph.SparseEdgeInternal_mj_get
-    if _newclass:
-        mj = _swig_property(_FactorGraph.SparseEdgeInternal_mj_get, _FactorGraph.SparseEdgeInternal_mj_set)
-    __swig_setmethods__["nnz"] = _FactorGraph.SparseEdgeInternal_nnz_set
-    __swig_getmethods__["nnz"] = _FactorGraph.SparseEdgeInternal_nnz_get
-    if _newclass:
-        nnz = _swig_property(_FactorGraph.SparseEdgeInternal_nnz_get, _FactorGraph.SparseEdgeInternal_nnz_set)
-    __swig_setmethods__["nnzIdx"] = _FactorGraph.SparseEdgeInternal_nnzIdx_set
-    __swig_getmethods__["nnzIdx"] = _FactorGraph.SparseEdgeInternal_nnzIdx_get
-    if _newclass:
-        nnzIdx = _swig_property(_FactorGraph.SparseEdgeInternal_nnzIdx_get, _FactorGraph.SparseEdgeInternal_nnzIdx_set)
+    ei = _swig_property(_FactorGraph.SparseEdgeInternal_ei_get, _FactorGraph.SparseEdgeInternal_ei_set)
+    ej = _swig_property(_FactorGraph.SparseEdgeInternal_ej_get, _FactorGraph.SparseEdgeInternal_ej_set)
+    data = _swig_property(_FactorGraph.SparseEdgeInternal_data_get, _FactorGraph.SparseEdgeInternal_data_set)
+    mi = _swig_property(_FactorGraph.SparseEdgeInternal_mi_get, _FactorGraph.SparseEdgeInternal_mi_set)
+    mj = _swig_property(_FactorGraph.SparseEdgeInternal_mj_get, _FactorGraph.SparseEdgeInternal_mj_set)
+    nnz = _swig_property(_FactorGraph.SparseEdgeInternal_nnz_get, _FactorGraph.SparseEdgeInternal_nnz_set)
+    nnzIdx = _swig_property(_FactorGraph.SparseEdgeInternal_nnzIdx_get, _FactorGraph.SparseEdgeInternal_nnzIdx_set)
 
     def __init__(self):
         this = _FactorGraph.new_SparseEdgeInternal()
@@ -936,27 +835,15 @@ class SparseEdgeInternal(_object):
 SparseEdgeInternal_swigregister = _FactorGraph.SparseEdgeInternal_swigregister
 SparseEdgeInternal_swigregister(SparseEdgeInternal)
 
-class CFactorBase(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, CFactorBase, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, CFactorBase, name)
+class CFactorBase(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
 
     def __init__(self, *args, **kwargs):
         raise AttributeError("No constructor defined - class is abstract")
     __repr__ = _swig_repr
-    if _newclass:
-        RegisterFactorCreator = staticmethod(_FactorGraph.CFactorBase_RegisterFactorCreator)
-    else:
-        RegisterFactorCreator = _FactorGraph.CFactorBase_RegisterFactorCreator
-    if _newclass:
-        CreateFactor = staticmethod(_FactorGraph.CFactorBase_CreateFactor)
-    else:
-        CreateFactor = _FactorGraph.CFactorBase_CreateFactor
-    __swig_setmethods__["m_LocalMax"] = _FactorGraph.CFactorBase_m_LocalMax_set
-    __swig_getmethods__["m_LocalMax"] = _FactorGraph.CFactorBase_m_LocalMax_get
-    if _newclass:
-        m_LocalMax = _swig_property(_FactorGraph.CFactorBase_m_LocalMax_get, _FactorGraph.CFactorBase_m_LocalMax_set)
+    RegisterFactorCreator = staticmethod(_FactorGraph.CFactorBase_RegisterFactorCreator)
+    CreateFactor = staticmethod(_FactorGraph.CFactorBase_CreateFactor)
+    m_LocalMax = _swig_property(_FactorGraph.CFactorBase_m_LocalMax_get, _FactorGraph.CFactorBase_m_LocalMax_set)
 
     def Primal(self, decode):
         return _FactorGraph.CFactorBase_Primal(self, decode)
@@ -993,27 +880,11 @@ def CFactorBase_CreateFactor(ID, nodes, data):
 CFactorBase_CreateFactor = _FactorGraph.CFactorBase_CreateFactor
 
 class NodeFactor(CFactorBase):
-    __swig_setmethods__ = {}
-    for _s in [CFactorBase]:
-        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
-    __setattr__ = lambda self, name, value: _swig_setattr(self, NodeFactor, name, value)
-    __swig_getmethods__ = {}
-    for _s in [CFactorBase]:
-        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
-    __getattr__ = lambda self, name: _swig_getattr(self, NodeFactor, name)
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["m_bi"] = _FactorGraph.NodeFactor_m_bi_set
-    __swig_getmethods__["m_bi"] = _FactorGraph.NodeFactor_m_bi_get
-    if _newclass:
-        m_bi = _swig_property(_FactorGraph.NodeFactor_m_bi_get, _FactorGraph.NodeFactor_m_bi_set)
-    __swig_setmethods__["m_NofStates"] = _FactorGraph.NodeFactor_m_NofStates_set
-    __swig_getmethods__["m_NofStates"] = _FactorGraph.NodeFactor_m_NofStates_get
-    if _newclass:
-        m_NofStates = _swig_property(_FactorGraph.NodeFactor_m_NofStates_get, _FactorGraph.NodeFactor_m_NofStates_set)
-    __swig_setmethods__["m_id"] = _FactorGraph.NodeFactor_m_id_set
-    __swig_getmethods__["m_id"] = _FactorGraph.NodeFactor_m_id_get
-    if _newclass:
-        m_id = _swig_property(_FactorGraph.NodeFactor_m_id_get, _FactorGraph.NodeFactor_m_id_set)
+    m_bi = _swig_property(_FactorGraph.NodeFactor_m_bi_get, _FactorGraph.NodeFactor_m_bi_set)
+    m_NofStates = _swig_property(_FactorGraph.NodeFactor_m_NofStates_get, _FactorGraph.NodeFactor_m_NofStates_set)
+    m_id = _swig_property(_FactorGraph.NodeFactor_m_id_get, _FactorGraph.NodeFactor_m_id_set)
 
     def __init__(self):
         this = _FactorGraph.new_NodeFactor()
@@ -1048,14 +919,7 @@ NodeFactor_swigregister = _FactorGraph.NodeFactor_swigregister
 NodeFactor_swigregister(NodeFactor)
 
 class SparseEdgeFactor(CFactorBase):
-    __swig_setmethods__ = {}
-    for _s in [CFactorBase]:
-        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
-    __setattr__ = lambda self, name, value: _swig_setattr(self, SparseEdgeFactor, name, value)
-    __swig_getmethods__ = {}
-    for _s in [CFactorBase]:
-        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
-    __getattr__ = lambda self, name: _swig_getattr(self, SparseEdgeFactor, name)
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
 
     def __init__(self, *args, **kwargs):
         raise AttributeError("No constructor defined")
@@ -1064,14 +928,7 @@ SparseEdgeFactor_swigregister = _FactorGraph.SparseEdgeFactor_swigregister
 SparseEdgeFactor_swigregister(SparseEdgeFactor)
 
 class SparseEdgeNZFactor(SparseEdgeFactor):
-    __swig_setmethods__ = {}
-    for _s in [SparseEdgeFactor]:
-        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
-    __setattr__ = lambda self, name, value: _swig_setattr(self, SparseEdgeNZFactor, name, value)
-    __swig_getmethods__ = {}
-    for _s in [SparseEdgeFactor]:
-        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
-    __getattr__ = lambda self, name: _swig_getattr(self, SparseEdgeNZFactor, name)
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
 
     def __init__(self, *args, **kwargs):
         raise AttributeError("No constructor defined")
@@ -1080,14 +937,7 @@ SparseEdgeNZFactor_swigregister = _FactorGraph.SparseEdgeNZFactor_swigregister
 SparseEdgeNZFactor_swigregister(SparseEdgeNZFactor)
 
 class DenseEdgeFactor(CFactorBase):
-    __swig_setmethods__ = {}
-    for _s in [CFactorBase]:
-        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
-    __setattr__ = lambda self, name, value: _swig_setattr(self, DenseEdgeFactor, name, value)
-    __swig_getmethods__ = {}
-    for _s in [CFactorBase]:
-        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
-    __getattr__ = lambda self, name: _swig_getattr(self, DenseEdgeFactor, name)
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
 
     def __init__(self, *args, **kwargs):
         raise AttributeError("No constructor defined")
@@ -1116,6 +966,16 @@ class DenseEdgeFactor(CFactorBase):
 DenseEdgeFactor_swigregister = _FactorGraph.DenseEdgeFactor_swigregister
 DenseEdgeFactor_swigregister(DenseEdgeFactor)
 
-# This file is compatible with both classic and new-style classes.
+class CBudgetFactor(CFactorBase):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
+
+    def __init__(self, *args, **kwargs):
+        raise AttributeError("No constructor defined - class is abstract")
+    __repr__ = _swig_repr
+    __swig_destroy__ = _FactorGraph.delete_CBudgetFactor
+    __del__ = lambda self: None
+CBudgetFactor_swigregister = _FactorGraph.CBudgetFactor_swigregister
+CBudgetFactor_swigregister(CBudgetFactor)
+
 
 
