@@ -64,9 +64,9 @@ def ConstructG(Edges1, Edges2, KP, KQ, isSparse):
         bi = doubleArray(NofNodes)
         for ni in range(NofNodes):
             for xi in range(NofNodes):
-                bi[xi] = KP[ni][xi]
+                bi[xi] = float(KP[ni][xi]) 
             G.AddNodeBelief(ni, bi)
-        del bi
+#        del bi
     G.AddAuctionFactor()
     del mi
     del mj

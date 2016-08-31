@@ -15,7 +15,7 @@ for idx in range(4):
     AllTime = 0.0;
     for d1 in range(10):
         for d2 in range(d1 + 1, 10):
-
+            
             data1 = sio.loadmat('./data_chrct/' + str(idx1base + d1 + 1) + '.mat');
             cnt += 1
             G1 = np.array(data1['G'])

@@ -672,6 +672,9 @@ namespace zzhang{
 	  virtual bool ReStore(FactorStore *data);
 
      };
+
+     class CBudgetFactor(){
+     };
      
 }
 
