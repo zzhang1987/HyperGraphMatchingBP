@@ -5,6 +5,9 @@ import numpy.matlib
 from FactorGraph import *
 from ChineseChar import *
 from BaBSolver import *
+from drawMatches import *
+import matplotlib.pyplot as plt
+
 
 ErrorRate = np.zeros(10)
 
@@ -39,6 +42,8 @@ for idx in range(4):
             #print("Time=%.4f" % res.Time)
             #dG.SetVerbose(True)
 
+            corrected = np.ones([len(res.Decode), 1]);
+
             AllTime += res.Time
 
             decode = res.Decode
@@ -46,8 +51,11 @@ for idx in range(4):
             #GTDecode = intArray(len(G1))
             for xi in range(len(G1)):
                 if (decode[xi] != xi):
-                    ErrAssign += 1;
+                    ErrAssign += 1
+                    corrected[xi] = 0
                 #GTDecode[xi] = xi
+            drawMatches(255 - I1,255 - I2, Pt1, Pt2, G1, G2, res.Decode, corrected)
+
 
             ErrorRate = ErrAssign / len(G1);
             SumErrorRate += ErrorRate
@@ -56,3 +64,4 @@ for idx in range(4):
             # print(G.GetDecode())
 
     print("Char", idx, " Accuracy ", 1 - SumErrorRate / cnt, "Time ", AllTime/cnt)
+    plt.show()
