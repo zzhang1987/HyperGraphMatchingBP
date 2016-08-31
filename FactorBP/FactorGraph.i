@@ -1,4 +1,4 @@
-%module FactorGraph
+%module (package="FactorBP") FactorGraph
 
 %{
      #include "BaBTypes.h"
@@ -11,7 +11,6 @@
 %include "std_vector.i"
 %include "std_unordered_map.i"
 %include "carrays.i"
-%include "numpy.i"
 
 %array_class(int, intArray);
 %array_class(double, doubleArray);
@@ -24,7 +23,6 @@ namespace std{
   %template(VecDouble) vector<double>;
   %template(VecVecdouble) vector< vector<double> >;
  }
-
 %typemap(newfree) FactorGraphDualStore * "delete $1;";
 %newobject zzhang::CFactorGraph::StoreDual;
 

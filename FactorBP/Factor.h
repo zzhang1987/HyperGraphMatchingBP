@@ -672,7 +672,7 @@ namespace zzhang{
 	  virtual bool ReStore(FactorStore *data);
 
      };
-
+#if 0
      class CBudgetFactor : public CFactorBase
      {
      private:
@@ -680,11 +680,11 @@ namespace zzhang{
 	  Real **bi;
 	  int* AssignMents;
 	  Real sum;
-	  
+	  Real *msg;
      public:
 	  
      };
-     
+#endif
 }
 
 #endif // FACTOR_H

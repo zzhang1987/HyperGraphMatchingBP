@@ -1,6 +1,5 @@
 import numpy as np
-from FactorGraph import *
-from FactorGraph import *
+from FactorGraph import FactorGraph
 from ConstructGM import *
 from BaBSolver import *
 #from sys import argv
