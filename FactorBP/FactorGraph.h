@@ -140,7 +140,10 @@ namespace zzhang{
 	  bool AddSparseEdge(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
 	  bool AddSparseEdgeNZ(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
 	  bool m_verbose;
-
+	  double MinDualDecrease;
+	  void SetMinDualDecrease(double EPS){
+	       MinDualDecrease = EPS;
+	  }
 	  void Solve(int MaxIter){
 	       const clock_t begin_time = clock();
 	       double lastDual = 1e20;
@@ -154,7 +157,7 @@ namespace zzhang{
 			 break;
 		    if(Dual < BestDecodeV)
 			 break;
-		    if(fabs(Dual - lastDual) < 1e-3)
+		    if(fabs(Dual - lastDual) < MinDualDecrease)
 			 break;
 		    lastDual = Dual;
 	       }
@@ -263,7 +266,9 @@ namespace zzhang{
 	       }
 	       return res;
 	  }
-	  
+	  void ResetMax(){
+	       BestDecodeV = -1e20;
+	  }
      public:
 	  FactorGraphDualStore *StoreDual();
 	  bool ReStoreDual(FactorGraphDualStore *store);

@@ -26,7 +26,7 @@ def GetSubtours(AssignMents):
     return SubTours
 
 if __name__ == '__main__':
-    NofNodes = 4
+    NofNodes = 5
     NofStates = FBP.intArray(NofNodes);
     for i in range(NofNodes):
         NofStates[i] = NofNodes
@@ -41,6 +41,7 @@ if __name__ == '__main__':
             thetaiD[xi] = -thetai[xi]
         G.AddNodeBelief(i,thetaiD)
     G.SetVerbose(True)
+    G.SetMinDualDecrease(0.000001)
     G.Solve(10)
     res = G.GetDecode()
     DecodedL = [b for b in res];
@@ -54,9 +55,12 @@ if __name__ == '__main__':
             AssignMents[ni] = SubT[(ni + 1) % len(SubT)]
         G.AddSubTourFactor(len(SubT), Nodes, AssignMents)
 
-    G.Solve(10)
+    G.ResetMax();
+    G.Solve(100)
 
     res1 = G.GetDecode()
-    DecodedL1 = [b for b in res]
+    res = FBP.BaBSolver(G, 600, 5, 0.005, True);
 
-
+    DecodedL1 = [b for b in res1]
+    print(DecodedL1)
+    print(res)

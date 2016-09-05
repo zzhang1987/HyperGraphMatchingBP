@@ -45,6 +45,7 @@ zzhang::CFactorGraph::CFactorGraph(int NofNodes, int *NofStates)
      srandom(32428328);
      m_verbose = false;
      Evid = std::vector<int> (NofNodes, 0);
+     MinDualDecrease = 1e-3;
 }
 
 

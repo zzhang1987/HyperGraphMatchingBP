@@ -40,13 +40,13 @@ zzhang::SubTourFactor::SubTourFactor(int N, int *Nodes, int *NofStates, int *Ass
 
 Real zzhang::SubTourFactor::Primal(int *decode){
      Real res = 0.0;
-     bool IsTheSame = true;
+     int IsTheSameCnt = 0;
      for(int i = 0; i < NofNodes; i++)
      {
-	  if(decode[Nodes[i]] != ForbiddenAssignMents[i]) IsTheSame = false;
+	  if(decode[Nodes[i]] == ForbiddenAssignMents[i]) IsTheSameCnt++;
 	  res -= Messages[i][decode[Nodes[i]]];
      }
-     if(IsTheSame) return -1e20;
+     if(IsTheSameCnt == NofNodes) return -1e20;
      else return res;
 }
 
@@ -68,10 +68,12 @@ void zzhang::SubTourFactor::UpdateMessages(){
 	  for(int j = 0; j < NofStates[cni]; j++){
 	       nBeliefs[cni][j] -= Messages[i][j];
 	       if(nBeliefs[cni][j] > MaxV){
-		    MaxV = nBeliefs[cni][j];
-		    NMax[i] = j;
 		    SecMaxV = MaxV;
 		    NSecMax[i] = NMax[i];
+		    
+		    MaxV = nBeliefs[cni][j];
+		    NMax[i] = j;
+		    
 	       }
 	       else if(nBeliefs[cni][j] > SecMaxV){
 		    SecMaxV = nBeliefs[cni][j];
@@ -91,28 +93,28 @@ void zzhang::SubTourFactor::UpdateMessages(){
 	  AllMax += MaxV;
      }
      
-     Real MaxGap = -1e20;
-     Real SecMaxGap = -1e20;
-     int MaxIDX = -1;
+     Real MinGap = 1e20;
+     Real SecMinGap = 1e20;
+     int MinIDX = -1;
     
      switch(Diff_Cnt){
      case 0:
 	  for(int i = 0; i < NofNodes; i++){
-	       if(Gap[i] > MaxGap){
-		    MaxGap = Gap[i];
-		    MaxIDX = i;
-		    SecMaxGap = MaxGap;
+	       if(Gap[i] < MinGap){
+		    SecMinGap = MinGap;
+		    MinGap = Gap[i];
+		    MinIDX = i;
 	       }
-	       else if(Gap[i] > SecMaxGap){
-		    SecMaxGap = Gap[i];
+	       else if(Gap[i] < SecMinGap){
+		    SecMinGap = Gap[i];
 	       }
 	  }	  
 	  for(int i = 0; i < NofNodes; i++){
 	       int cni = Nodes[i];
 	       double V1 = AllMax - nBeliefs[cni][NMax[i]];
 	       double V2 = AllMax;
-	       if(i == MaxIDX) V2 -= SecMaxGap;
-	       else V2 -= MaxGap;
+	       if(i == MinIDX) V2 -= SecMinGap;
+	       else V2 -= MinGap;
 	       for(int xi = 0; xi < NofStates[cni]; xi++)
 	       {
 		    if(xi == ForbiddenAssignMents[cni])
@@ -127,7 +129,7 @@ void zzhang::SubTourFactor::UpdateMessages(){
 			 nBeliefs[cni][xi] = V;
 		    }
 	       }
-	       if(i==MaxIDX){
+	       if(i==MinIDX){
 		    m_NodeFactors[cni].m_LocalMax = NSecMax[i];
 	       }
 	       else{
@@ -138,9 +140,9 @@ void zzhang::SubTourFactor::UpdateMessages(){
 	  break;
      case 1:
 	  for(int i = 0; i < NofNodes; i++){
-	       if(Gap[i] > MaxGap && !IsTheSame[i]){
-		    MaxGap = Gap[i];
-		    MaxIDX = i;
+	       if(Gap[i] < MinGap && IsTheSame[i]){
+		    MinGap = Gap[i];
+		    MinIDX = i;
 	       }	   
 	  }
 	  for(int i = 0; i < NofNodes; i++)
@@ -150,10 +152,10 @@ void zzhang::SubTourFactor::UpdateMessages(){
 	       for(int xi = 0; xi < NofStates[cni]; xi++)
 	       {
 		    double V = 0.0;
-		    if(i == MaxIDX && xi == ForbiddenAssignMents[i]){
-			 V = (V1 - MaxGap + nBeliefs[cni][xi]) / NofNodes;
+		    if((!IsTheSame[i]) && xi == ForbiddenAssignMents[i]){
+			 V = (V1 - MinGap + nBeliefs[cni][xi]) / NofNodes;
 		    }
-		    else V = V1 / NofNodes;
+		    else V = (V1 + nBeliefs[cni][xi]) / NofNodes;
 		    Messages[i][xi] = V - nBeliefs[cni][xi];
 		    nBeliefs[cni][xi] = V;
 		    
@@ -169,10 +171,7 @@ void zzhang::SubTourFactor::UpdateMessages(){
 	       for(int xi = 0; xi < NofStates[cni]; xi++)
 	       {
 		    double V = 0.0;
-		    if(i == MaxIDX && xi == ForbiddenAssignMents[i]){
-			 V = (V1 - MaxGap + nBeliefs[cni][xi]) / NofNodes;
-		    }
-		    else V = V1 / NofNodes;
+		    V = (V1 + nBeliefs[cni][xi]) / NofNodes;
 		    Messages[i][xi] = V - nBeliefs[cni][xi];
 		    nBeliefs[cni][xi] = V;
 	       }
