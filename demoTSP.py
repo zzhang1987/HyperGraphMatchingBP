@@ -1,54 +1,62 @@
+import FactorBP as FBP
 import numpy as np
-from FactorGraph import FactorGraph
-from ConstructGM import *
-from BaBSolver import *
-#from sys import argv
-
-np.random.seed(123456)
-size_pr = 20
-c = np.random.uniform(0, 10.0, [size_pr, size_pr])
-c = c + c.transpose();
-c = c ;
-NofNodes = int(size_pr)
-NofStates = intArray(NofNodes)
+from GenerateTSP import GenerateEuclideanTSP, GenerateSymTSP, GenerateSymTSP
 
 
+def GetSubtours(AssignMents):
+    n = len(AssignMents)
+    Visited = [False] * n
+    cnt = 0;
+    SubTours = []
+    while True:
+        current = Visited.index(False)
+        thiscycle = [current]
+        while True:
+            Visited[current] = True
+            t = AssignMents[current]
+            if(Visited[t] == True):
+                break
+            else:
+                current = t;
+                thiscycle.append(t)
+        SubTours.append(thiscycle)
+        cnt = cnt + len(thiscycle)
+        if(cnt == n):
+            break
+    return SubTours
 
-oldc = c;
-c = - c;
+if __name__ == '__main__':
+    NofNodes = 4
+    NofStates = FBP.intArray(NofNodes);
+    for i in range(NofNodes):
+        NofStates[i] = NofNodes
+    G = FBP.CFactorGraph(NofNodes, NofStates)
+    G.AddAuctionFactor();
+    np.random.seed(123456)
+    distMat = GenerateEuclideanTSP(NofNodes)
+    for i in range(NofNodes):
+        thetai = distMat[i]
+        thetaiD = FBP.doubleArray(NofNodes)
+        for xi in range(NofNodes):
+            thetaiD[xi] = -thetai[xi]
+        G.AddNodeBelief(i,thetaiD)
+    G.SetVerbose(True)
+    G.Solve(10)
+    res = G.GetDecode()
+    DecodedL = [b for b in res];
+    print(res)
+    SubTours = GetSubtours(DecodedL)
+    for SubT in SubTours:
+        Nodes = FBP.intArray(len(SubT))
+        AssignMents = FBP.intArray(len(SubT))
+        for ni in range(len(SubT)):
+            Nodes[ni] = SubT[ni]
+            AssignMents[ni] = SubT[(ni + 1) % len(SubT)]
+        G.AddSubTourFactor(len(SubT), Nodes, AssignMents)
 
-for i in range(size_pr):
-    c[i][i] = -1000;
-    NofStates[i] = NofNodes
+    G.Solve(10)
 
-EPotentials = doubleArray(NofNodes * NofNodes)
+    res1 = G.GetDecode()
+    DecodedL1 = [b for b in res]
 
-for i in range(NofNodes):
-    for j in range(NofNodes):
-        EPotentials[i * NofNodes + j] = c[i][j]
-
-G = CFactorGraph(NofNodes, NofStates)
-for i in range(size_pr):
-    G.AddEdge(i, (i + 1)%size_pr, EPotentials)
-
-G.AddAuctionFactor()
-#G.SetVerbose(True)
-#G.Solve(1000)
-G.SetVerbose(False)
-res = BaBSolver(G, 1000, 5, 0.0000005, True);
-visited = np.zeros(size_pr)
-IsValid = True
-i = 0
-cnt = 0
-while(cnt < size_pr):
-    i = res.Decode[i]
-    if(visited[i]):
-        IsValid = False
-        break
-    else:
-        visited[i] = True
-        cnt = cnt + 1
-
-print(IsValid)
-print(res.Decode)
 
