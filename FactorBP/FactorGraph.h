@@ -25,7 +25,7 @@
 #include "FactorGraphStore.h"
 #include "Auction.h"
 #include "BaBTypes.h"
-
+#include "SubTourFactor.h"
 
 namespace zzhang{
 
@@ -103,6 +103,12 @@ namespace zzhang{
 	       auFactor = new CAuctionFactor(m_NofNodes, m_NofStates,
 					     m_bi, m_NodeFactors, Evid);
 	  }
+
+	  void AddSubTourFactor(int N, int *Nodes, int *AssignMents){
+	       SubTourFactor *subTour = new SubTourFactor(N, Nodes, m_NofStates, AssignMents, m_bi, m_NodeFactors);
+	       m_Factors.push_back(subTour);
+	  }
+	  
 	  
 	  virtual ~CFactorGraph(){
 	       delete [] m_NofStates;
