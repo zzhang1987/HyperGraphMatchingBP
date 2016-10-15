@@ -91,6 +91,7 @@ namespace zzhang{
 
 	  virtual bool GetIncludedNodes(std::vector<int>& nodes){
 	       nodes = std::vector<int>(Nodes, Nodes+NofNodes);
+          return true;
 	  }
 	  int size(){return NofNodes;}
 

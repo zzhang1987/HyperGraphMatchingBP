@@ -1,4 +1,8 @@
 %module (package="FactorBP") FactorGraph
+%include "std_vector.i"
+%include "std_unordered_map.i"
+%include "carrays.i"
+
 
 %{
      #include "BaBTypes.h"
@@ -8,9 +12,6 @@
      #include "FactorGraphStore.h"
 %}
 
-%include "std_vector.i"
-%include "std_unordered_map.i"
-%include "carrays.i"
 
 %array_class(int, intArray);
 %array_class(double, doubleArray);

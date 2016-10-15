@@ -130,7 +130,7 @@ namespace zzhang{
 	  {
 	       std::vector<int> nodes;
 	       GetIncludedNodes(nodes);
-	       return nodes.size();
+	       return static_cast<int>(nodes.size());
 	  }
 	  /**
 	   * Desctrotor;
@@ -203,6 +203,7 @@ namespace zzhang{
 	  virtual bool GetIncludedNodes(std::vector<int>& nodes){
 	       nodes = std::vector<int>(1);
 	       nodes[0] = m_id;
+          return true;
 	  }
 	  virtual void Print(){
 	       std::cout << "Node " << m_id;
@@ -221,7 +222,7 @@ namespace zzhang{
      private:
 	  void FindLocalMax()
 	  {
-	       double MaxV = -DBL_MAX;
+	       double MaxV = -ZZHANG_DBL_MAX;
 	       for(int i = 0; i < m_NofStates; i++)
 	       {
 		    if(m_bi[i] > MaxV)
@@ -306,12 +307,11 @@ namespace zzhang{
 	  }
 	  
 	  virtual void UpdateMessages(){
-	       Real LocalMaxV = -DBL_MAX;
-	       Real Maxi = -DBL_MAX;
-	       Real Maxj = -DBL_MAX;
+	       Real LocalMaxV = -ZZHANG_DBL_MAX;
+	       Real Maxi = -ZZHANG_DBL_MAX;
+	       Real Maxj = -ZZHANG_DBL_MAX;
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
 	       {
-		    double t = bi[xi];
 		    bi[xi] -= mi[xi];
 		    if(bi[xi] > Maxi)
 		    {
@@ -321,7 +321,6 @@ namespace zzhang{
 	       }
 	       for(int xj = 0; xj < NofStates[ej]; xj++)
 	       {
-		    double t = bj[xj];
 		    bj[xj] -= mj[xj];
 		    if(bj[xj] > Maxj)
 		    {
@@ -375,9 +374,9 @@ namespace zzhang{
 	  virtual bool GetIncludedNodes(std::vector<int>& nodes) {
 	       nodes =std::vector<int>(2);
 	       nodes[0] = ei; nodes[1] = ej;
+          return true;
 	  }
 	  virtual void Print(){
-	       int xijMax = NofStates[ei] * NofStates[ej];
 	       std::cout << "Edge: " << ei << " " << ej << std::endl;
 	       std::cout << "Potentials : " << NofStates[ei] << "x" << NofStates[ej] <<  " LocalMax: " << m_LocalMax <<std::endl;
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
@@ -422,16 +421,15 @@ namespace zzhang{
 	  }
 	  
 	  virtual void UpdateMessages(){
-	       Real LocalMaxV = -DBL_MAX;
-	       Real Maxi = -DBL_MAX;
-	       Real SecMaxi = -DBL_MAX;
-	       Real Maxj = -DBL_MAX;
-	       Real SecMaxj = -DBL_MAX;
+	       Real LocalMaxV = -ZZHANG_DBL_MAX;
+	       Real Maxi = -ZZHANG_DBL_MAX;
+	       Real SecMaxi = -ZZHANG_DBL_MAX;
+	       Real Maxj = -ZZHANG_DBL_MAX;
+	       Real SecMaxj = -ZZHANG_DBL_MAX;
 	       int SecMaxidx = -1;
 	       int SecMaxjdx = -1;
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
 	       {
-		    double t = bi[xi];
 		    bi[xi] -= mi[xi];
 		    if(bi[xi] > Maxi)
 		    {
@@ -448,7 +446,6 @@ namespace zzhang{
 	       }
 	       for(int xj = 0; xj < NofStates[ej]; xj++)
 	       {
-		    double t = bj[xj];
 		    bj[xj] -= mj[xj];
 		    if(bj[xj] > Maxj)
 		    {
@@ -524,9 +521,9 @@ namespace zzhang{
 	  virtual bool GetIncludedNodes(std::vector<int>& nodes) {
 	       nodes =std::vector<int>(2);
 	       nodes[0] = ei; nodes[1] = ej;
+          return true;
 	  }
 	  virtual void Print(){
-	       int xijMax = NofStates[ei] * NofStates[ej];
 	       std::cout << "Edge: " << ei << " " << ej << std::endl;
 	       std::cout << "Potentials : " << NofStates[ei] << "x" << NofStates[ej] <<  " LocalMax: " << m_LocalMax <<std::endl;
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
@@ -579,7 +576,7 @@ namespace zzhang{
 	       return true;
 	  }
 	  virtual void UpdateMessages(){
-	       Real LocalMaxV = -DBL_MAX;
+	       Real LocalMaxV = -ZZHANG_DBL_MAX;
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
 	       {
 		    int base = xi * NofStates[ej];
@@ -590,11 +587,11 @@ namespace zzhang{
 	       }
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
 	       {
-		    bi[xi] = -DBL_MAX;
+		    bi[xi] = -ZZHANG_DBL_MAX;
 	       }
 	       for(int xj = 0; xj < NofStates[ej]; xj++)
 	       {
-		    bj[xj] = -DBL_MAX;
+		    bj[xj] = -ZZHANG_DBL_MAX;
 	       }
 
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
@@ -638,10 +635,10 @@ namespace zzhang{
 	  virtual bool GetIncludedNodes(std::vector<int>& nodes) {
 	       nodes =std::vector<int>(2);
 	       nodes[0] = ei; nodes[1] = ej;
+          return true;
 	  }
 	  
 	  virtual void Print(){
-	       int xijMax = NofStates[ei] * NofStates[ej];
 	       std::cout << "Edge: " << ei << " " << ej << std::endl;
 	       std::cout << "Potentials : " << NofStates[ei] << "x" << NofStates[ej] <<  " LocalMax: " << m_LocalMax <<std::endl;
 	       for(int xi = 0; xi < NofStates[ei]; xi++)
@@ -685,6 +682,65 @@ namespace zzhang{
 	  
      };
 #endif
+
+
+     class CGeneralSparseFactor : public CFactorBase{
+     private:
+	  Real * m_NNZValues;
+	  std::vector< int > m_Nodes;
+	  std::vector< std::vector<int> > m_NNZs;
+	  std::vector< Real *> m_Messages;
+      std::vector< Real *> m_MaxMarginals;
+
+	  std::vector< NodeFactor* > m_NodeFactors;
+         std::unordered_map< std::vector<int>, double, container_hash< std::vector<int> > > m_NNZMap;
+	  CGeneralSparseFactor(const std::vector<int>& Nodes,
+			       const std::vector< std::vector<int> >& NNZs,
+			       Real * NNZValues,
+			       std::vector< Real * > Messages,
+			       const std::vector< NodeFactor *> NodeFactors);
+	  virtual ~CGeneralSparseFactor();
+         friend class CFactorGraph;
+         
+         
+         /**
+          * Store current dual variable
+          */
+         virtual zzhang::FactorStore* Store() ;
+         /**
+          * Restore current dual variable
+          */
+         virtual bool ReStore(zzhang::FactorStore *data) ;
+     public:
+         /**
+          * return the primal value of current factor with given decode.
+          * @param decode given decode
+          */
+         virtual Real Primal(int *decode) ;
+         /**
+          * return current dual.
+          */
+         virtual Real Dual() ;
+         /**
+          * Updating all message variables.
+          */
+         virtual void UpdateMessages() ;
+         /**
+          * Print instrinsic information of the factor.
+          */
+         virtual void Print() ;
+         /**
+          * Is Generic Factor of Sparse Factor
+          */
+         virtual bool IsGeneralFactor() ;
+         /**
+          * Return a vector, which contains all the nodes included in the factor
+          */
+         virtual bool GetIncludedNodes(std::vector<int>& nodes) ;
+         
+         
+
+     };
 }
 
 #endif // FACTOR_H

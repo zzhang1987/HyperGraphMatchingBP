@@ -146,7 +146,7 @@ namespace zzhang{
 			 unAssig.push_back(i);
 			 double optValForI = -1e20;
 			 double secOptValForI = -1e20;
-			 int optObjForI, secOptObjForI;
+			 int optObjForI = 0, secOptObjForI;
 			 for(int j = 0; j < NofNodes; j++)
 			 {
 			      //if(IsOccupied[j]) continue;

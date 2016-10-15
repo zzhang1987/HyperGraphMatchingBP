@@ -139,6 +139,9 @@ namespace zzhang{
 	  bool AddEdge(int ei, int ej, double *data);
 	  bool AddSparseEdge(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
 	  bool AddSparseEdgeNZ(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
+         bool AddGenericGenericSparseFactor(const std::vector<int>& Nodes,
+                                            const std::vector< std::vector<int> >& NNZs,
+                                            double * NNZv);
 	  bool m_verbose;
 	  double MinDualDecrease;
 	  void SetMinDualDecrease(double EPS){
@@ -241,11 +244,11 @@ namespace zzhang{
 	  MostFractionalNodes FindMostFracNodes()
 	  {
 	       MostFractionalNodes res;
-	       Real Min_Gap = DBL_MAX;
+	       Real Min_Gap = ZZHANG_DBL_MAX;
 	       for(int i = 0; i < m_NofNodes; i++)
 	       {
 		    Real MaxValue = m_NodeFactors[i].Dual();
-		    Real SecMaxValue = -DBL_MAX;
+		    Real SecMaxValue = -ZZHANG_DBL_MAX;
 		    int MaxVID = m_NodeFactors[i].m_LocalMax;
 		    for(int xi = 0; xi < m_NofStates[i]; xi++)
 		    {

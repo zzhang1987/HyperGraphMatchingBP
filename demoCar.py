@@ -2,9 +2,10 @@ import scipy.io as sio
 # import cv2
 import numpy as np
 import numpy.matlib
-from FactorGraph import *
+from FactorBP import *
+#from FactorGraph import *
 from ConstructGM import *
-from BaBSolver import *
+#from BaBSolver import *
 from sys import argv
 
 def RunCar(id, outs, IsSparse):
@@ -16,7 +17,7 @@ def RunCar(id, outs, IsSparse):
     KQ = data['KQ']
 
     G = ConstructG(Edges1, Edges2, KP, KQ, IsSparse);
-    G.SetVerbose(False)
+    G.SetVerbose(True)
     # G.Solve(5)
     # GStore = G.StoreDual();
     res = BaBSolver(G, 600, 5, 0.005, False);
@@ -30,10 +31,11 @@ def RunCar(id, outs, IsSparse):
 
 if __name__ == '__main__':
     for nOus in range(1):
-        for idx in range(4,5):
+        for idx in range(1,2):
             print("Compute for Instance %d Outliers %d" % (idx, nOus))
             ResFname = './Car/CarIDRes' + str(idx) + '_nOut' + str(nOus) + '_' +str(True) + '.mat';
             res1 = RunCar(idx, nOus, True)
             Res = {}
             Res['res'] = res1
+            print(res1)
             sio.savemat(ResFname, Res)

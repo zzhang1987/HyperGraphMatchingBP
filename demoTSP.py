@@ -1,6 +1,6 @@
 import FactorBP as FBP
 import numpy as np
-from GenerateTSP import GenerateEuclideanTSP, GenerateSymTSP, GenerateSymTSP
+from GenerateTSP import GenerateEuclideanTSP, GenerateSymTSP, GenerateASymTSP
 
 
 def GetSubtours(AssignMents):
@@ -26,14 +26,15 @@ def GetSubtours(AssignMents):
     return SubTours
 
 if __name__ == '__main__':
+    np.random.seed(123456)
+   
     NofNodes = 5
     NofStates = FBP.intArray(NofNodes);
     for i in range(NofNodes):
         NofStates[i] = NofNodes
     G = FBP.CFactorGraph(NofNodes, NofStates)
     G.AddAuctionFactor();
-    np.random.seed(123456)
-    distMat = GenerateEuclideanTSP(NofNodes)
+    distMat = GenerateASymTSP(NofNodes)
     for i in range(NofNodes):
         thetai = distMat[i]
         thetaiD = FBP.doubleArray(NofNodes)
@@ -47,20 +48,26 @@ if __name__ == '__main__':
     DecodedL = [b for b in res];
     print(res)
     SubTours = GetSubtours(DecodedL)
-    for SubT in SubTours:
-        Nodes = FBP.intArray(len(SubT))
-        AssignMents = FBP.intArray(len(SubT))
-        for ni in range(len(SubT)):
-            Nodes[ni] = SubT[ni]
-            AssignMents[ni] = SubT[(ni + 1) % len(SubT)]
-        G.AddSubTourFactor(len(SubT), Nodes, AssignMents)
+    while(len(SubTours) > 1):
+        for SubT in SubTours:
+            Nodes = FBP.intArray(len(SubT))
+            AssignMents = FBP.intArray(len(SubT))
+            for ni in range(len(SubT)):
+                Nodes[ni] = SubT[ni]
+                AssignMents[ni] = SubT[(ni + 1) % len(SubT)]
+            G.AddSubTourFactor(len(SubT), Nodes, AssignMents)
 
-    G.ResetMax();
-    G.Solve(100)
+        G.ResetMax();
+        G.Solve(100)
+        GStore = G.StoreDual()
+    
 
-    res1 = G.GetDecode()
-    res = FBP.BaBSolver(G, 600, 5, 0.005, True);
-
-    DecodedL1 = [b for b in res1]
-    print(DecodedL1)
-    print(res)
+        res1 = G.GetDecode()
+        res = FBP.BaBSolver(G, 600, 5, 0.005, True);
+        SubTours = GetSubtours(res.Decode)
+        G.ReStoreDual(GStore)
+        #DecodedL1 = [b for b in res1]
+        print(SubTours)
+        print(res.Decode)
+    #print(DecodedL1)
+    #print(res)

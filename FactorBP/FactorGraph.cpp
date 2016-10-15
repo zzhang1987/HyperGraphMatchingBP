@@ -38,7 +38,7 @@ zzhang::CFactorGraph::CFactorGraph(int NofNodes, int *NofStates)
      }
      m_CurrentDecode = new int[NofNodes];
      m_BestDecode = new int[NofNodes];
-     BestDecodeV = -DBL_MAX;
+     BestDecodeV = -ZZHANG_DBL_MAX;
      memset(m_CurrentDecode, 0, sizeof(int) * NofNodes);
      memset(m_BestDecode, 0, sizeof(int) * NofNodes);
      auFactor = NULL;
@@ -176,7 +176,7 @@ bool zzhang::CFactorGraph::AddEdge(int ei, int ej, double *data)
 
 
 zzhang::FactorGraphDualStore * zzhang::CFactorGraph::StoreDual(){
-     FactorGraphDualStore *store = new FactorGraphDualStore(m_NofNodes, m_Factors.size());
+     FactorGraphDualStore *store = new FactorGraphDualStore(m_NofNodes, static_cast<int>(m_Factors.size()));
      for(int i = 0; i < m_NodeFactors.size(); i++)
      {
 	  store->NodeStores[i] = m_NodeFactors[i].Store();
@@ -205,16 +205,17 @@ bool zzhang::CFactorGraph::ReStoreDual(FactorGraphDualStore *store)
      }
      if(auFactor) auFactor->ReStore(store->AuctionStore);
      Evid = store->Evid;
+    return true;
 }
 
 
 void zzhang::CFactorGraph::UpdateMessages()
 {
-           int start = random();
+           long start = random();
 
 	   for(int ii = 0; ii < m_Factors.size(); ii++)
 	   {
-		int i = (ii + start) % m_Factors.size();
+		long i = (ii + start) % m_Factors.size();
 		m_Factors[i]->UpdateMessages();
 	   }
 	   if(auFactor)
@@ -242,4 +243,21 @@ void zzhang::CFactorGraph::UpdateMessages()
 		memcpy(m_BestDecode, m_CurrentDecode, sizeof(int) * m_NofNodes);
 	   }
 	   if(m_verbose) std::cout << "Current Dual " << Dual << " Current Primal " << BestDecodeV ;
+}
+
+
+bool zzhang::CFactorGraph::AddGenericGenericSparseFactor(const std::vector<int> &Nodes, const std::vector<std::vector<int> > &NNZs, double *NNZv){
+    std::vector<NodeFactor *> NodeFactors(Nodes.size());
+    for(int i = 0; i < Nodes.size(); i++)
+    {
+        NodeFactors[i] = &m_NodeFactors[Nodes[i]];
+    }
+    
+    zzhang::CGeneralSparseFactor * factor = new zzhang::CGeneralSparseFactor(Nodes,
+                                                                             NNZs,
+                                                                             NNZv,
+                                                                             std::vector<Real *>(0),
+                                                                             NodeFactors);
+    m_Factors.push_back(factor);
+    
 }
