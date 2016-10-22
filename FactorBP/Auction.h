@@ -37,8 +37,10 @@ namespace zzhang{
 	  int *AssignMent;
 	  std::vector<bool> IsOccupied;
 	  friend class CFactorGraph;
-     CAuctionFactor(int N, int *States, Real **pi, std::vector<NodeFactor>& NFactors, std::vector<int>& evid): NofNodes(N),NofStates(States), bi(pi), NodeFactors(NFactors), Evid(evid)
+	  CFactorGraph *m_G;
+     CAuctionFactor(int N, int *States, Real **pi, std::vector<NodeFactor>& NFactors, std::vector<int>& evid, CFactorGraph* g): NofNodes(N),NofStates(States), bi(pi), NodeFactors(NFactors), Evid(evid)
 	       {
+		    m_G = g;
 		    assert(N > 0);
 		    prices = new Real[N];
 		    AssignMent = new int[N];
@@ -63,64 +65,7 @@ namespace zzhang{
 	       return true;
 	  }
 
-	  void Auction(){
-	       // IsOccupied = std::vector<bool> (NofNodes, false);
-	      
-	       for(int j = 0; j < NofNodes; j++)
-	       {
-		    for(int i = 0; i < NofNodes; i++)
-		    {
-			 bi[i][j] += prices[j];
-		    }
-		    //prices[j] = 0.0;
-	       }
-#if 0
-	       for(int i = 0; i < NofNodes; i++)
-	       {
-		    if(Evid[i] > 0)
-		    {
-			 int j = Evid[i] - 1;
-			 if(IsOccupied[j]) return false;
-			 IsOccupied[j] = true;
-		    }
-	       }
-#endif	       
-	       double epsilon = 1.0;
-	       while(epsilon > 1e-5)
-	       {
-		    memset(AssignMent, -1, sizeof(int) * NofNodes);
-		    while(1){
-			 bool Finished = true;
-			 for(int i = 0; i < NofNodes; i++)
-			 {
-			      if(AssignMent[i] == -1){
-				   Finished = false;
-				   break;
-			      }
-			 }
-			 if(Finished) break;
-			 auctionRound(epsilon);
-		    }
-		    epsilon *= 0.25;
-	       }
-
-	       SumPrice = 0.0;
-	       //  std::cout << "Prices :" << std::endl;
-	       for(int i = 0; i < NofNodes; i++)
-	       {
-		    NodeFactors[i].m_LocalMax = AssignMent[i];
-		    SumPrice += prices[i];
-		    //std::cout << prices[i] << " ";
-
-		    for(int j = 0; j < NofNodes; j++)
-		    {
-			 bi[i][j] -= prices[j];
-		    }
-	       }
-	       //std::cout << std::endl;
-	       //return true;
-	       
-	  }
+	  void Auction();
 
 	  void auctionRound(double epsilon){
 	       std::vector<int> tmpBidded;

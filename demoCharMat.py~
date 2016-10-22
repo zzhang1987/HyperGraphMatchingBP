@@ -1,0 +1,17 @@
+mport scipy.io as sio
+# import cv2
+import numpy as np
+import numpy.matlib
+from FactorGraph import *
+from ChineseChar import *
+from BaBSolver import *
+
+ErrorRate = np.zeros(10)
+
+for idx in range(4):
+    cnt = 0;
+    SumErrorRate = 0.0;
+    idx1base = (idx ) * 10;
+    AllTime = 0.0;
+    for d1 in range(10):
+        for d2 in range(d1 + 1, 10):

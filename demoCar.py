@@ -17,7 +17,7 @@ def RunCar(id, outs, IsSparse):
     KQ = data['KQ']
 
     G = ConstructG(Edges1, Edges2, KP, KQ, IsSparse);
-    G.SetVerbose(True)
+    G.SetVerbose(False)
     # G.Solve(5)
     # GStore = G.StoreDual();
     res = BaBSolver(G, 600, 5, 0.005, False);

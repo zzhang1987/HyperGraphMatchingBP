@@ -212,11 +212,22 @@ bool zzhang::CFactorGraph::ReStoreDual(FactorGraphDualStore *store)
 void zzhang::CFactorGraph::UpdateMessages()
 {
            long start = random();
-
-	   for(int ii = 0; ii < m_Factors.size(); ii++)
-	   {
-		long i = (ii + start) % m_Factors.size();
-		m_Factors[i]->UpdateMessages();
+	   if(m_PrimalDualGap.size() != 0){
+		for(int ii = 0; ii < m_PrimalDualGap.size(); ii++)
+		{
+		     long i = m_PrimalDualGap[ii].first;
+		     if((-m_Factors[i]->Primal(m_CurrentDecode)) < 1e-8){
+			  continue;
+		     }
+		     m_Factors[i]->UpdateMessages();
+		}
+	   }
+	   else{
+		for(int ii = 0; ii < m_Factors.size(); ii++)
+		{
+		     long i = (ii + start) % m_Factors.size();
+		     m_Factors[i]->UpdateMessages();
+		}
 	   }
 	   if(auFactor)
 	   {
@@ -233,10 +244,24 @@ void zzhang::CFactorGraph::UpdateMessages()
 	   
 	   //std::cout << "Dual Here2 " << Dual << std::endl;
 	   double Primal = Dual;
+	   m_PrimalDualGap = std::vector< std::pair<int, double> > (m_Factors.size());
 	   for(int i = 0; i <m_Factors.size(); i++)
 	   {
-		Primal += m_Factors[i]->Primal(m_CurrentDecode);
+		double CPrimal = m_Factors[i]->Primal(m_CurrentDecode);
+		Primal += CPrimal;
+		m_PrimalDualGap[i] = std::pair<int,double>(i, CPrimal);
 	   }
+	   std::sort(m_PrimalDualGap.begin(),
+		     m_PrimalDualGap.end(),
+		     [](const std::pair<int, double>& a,
+			const std::pair<int, double>& b){
+			  return a.second < b.second;
+		     });
+
+	   //std::cout << "Largest Gap: " << m_PrimalDualGap[0].second << std::endl;
+	   //std::cout << "Smallest Gap: " << m_PrimalDualGap[m_PrimalDualGap.size() - 1].second << std::endl;
+	   
+	   
 	   if(Primal > BestDecodeV)
 	   {
 		BestDecodeV = Primal;
@@ -259,5 +284,6 @@ bool zzhang::CFactorGraph::AddGenericGenericSparseFactor(const std::vector<int> 
                                                                              std::vector<Real *>(0),
                                                                              NodeFactors);
     m_Factors.push_back(factor);
+    return true;
     
 }

@@ -90,6 +90,9 @@ namespace zzhang{
 	   * Current Evindence
 	   */
 	  std::vector<int> Evid;
+
+	  std::vector< std::pair<int, double> > m_PrimalDualGap;
+	  
      public:
 
 	  void SetVerbose(bool verbose){
@@ -101,9 +104,11 @@ namespace zzhang{
 	  void AddAuctionFactor()
 	  {
 	       auFactor = new CAuctionFactor(m_NofNodes, m_NofStates,
-					     m_bi, m_NodeFactors, Evid);
+					     m_bi, m_NodeFactors, Evid, this);
 	  }
-
+	  
+	  friend class CAuctionFactor;
+	  
 	  void AddSubTourFactor(int N, int *Nodes, int *AssignMents){
 	       SubTourFactor *subTour = new SubTourFactor(N, Nodes, m_NofStates, AssignMents, m_bi, m_NodeFactors);
 	       m_Factors.push_back(subTour);
@@ -148,6 +153,7 @@ namespace zzhang{
 	       MinDualDecrease = EPS;
 	  }
 	  void Solve(int MaxIter){
+	       m_PrimalDualGap.clear();
 	       const clock_t begin_time = clock();
 	       double lastDual = 1e20;
 	       for(int iter=0; iter < MaxIter; iter++)
@@ -163,6 +169,7 @@ namespace zzhang{
 		    if(fabs(Dual - lastDual) < MinDualDecrease)
 			 break;
 		    lastDual = Dual;
+		    
 	       }
 	  }
 	  /**
@@ -245,11 +252,14 @@ namespace zzhang{
 	  {
 	       MostFractionalNodes res;
 	       Real Min_Gap = ZZHANG_DBL_MAX;
+	       Real eps = 1e-4;
+	       int MaxCnt = -1;
 	       for(int i = 0; i < m_NofNodes; i++)
 	       {
 		    Real MaxValue = m_NodeFactors[i].Dual();
 		    Real SecMaxValue = -ZZHANG_DBL_MAX;
 		    int MaxVID = m_NodeFactors[i].m_LocalMax;
+		    int cMaxCnt = 0;
 		    for(int xi = 0; xi < m_NofStates[i]; xi++)
 		    {
 			 
@@ -257,10 +267,14 @@ namespace zzhang{
 			 {
 			      SecMaxValue = m_bi[i][xi];
 			 }
+			 if(xi != MaxVID && fabs(m_bi[i][xi] - MaxValue) < eps){
+			      cMaxCnt++;
+			 }
 		    }
 		    Real gap = fabs(MaxValue - SecMaxValue);
-		    if(gap < Min_Gap)
+		    if(cMaxCnt > MaxCnt)
 		    {
+			 MaxCnt = cMaxCnt;
 			 Min_Gap = gap;
 			 res.Nodes = i;
 			 res.States = MaxVID;

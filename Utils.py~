@@ -1,0 +1,44 @@
+def CreateTensorHouseDelaunay(P1, P2, bpermute):
+    res = {}
+    NP1 = P1.shape[0]
+    NP2 = P2.shape[0]
+    if(bpermute):
+        res['GT'] = np.random.permutation(P2.shape[0])
+    else:
+        res['GT'] = np.array(range(P2.shape[0]))
+    P1 = P1[res['GT'], :]
+    tri1 = Delaunay(P1)
+    tri2 = Delaunay(P2)
+    t1 = tri1.simplices
+    t2 = PermunateTriplets(tri2.simplices)
+    
+    #Because of the super symmetric, we only need to permunate t2
+    
+    Feature1 = computeFeatureSingle(P1,t1)
+    Feature2 = computeFeatureSingle(P2,t2)
+    
+    distMat = ComputeFeatureDistance(Feature1, Feature2)
+    
+    dist = np.exp(- (distMat / np.mean(distMat) ))
+    
+    res['Triplets'] = t1
+    res['NTriplets'] = t2
+    res['Similarity'] = dist
+    return res
+
+def IndicesToVec(indices, NofNodes, NofStates):
+    res = VecInt(NofNodes)
+    res[2] = indices % NofStates
+    indices /= NofStates
+    res[1] = indices % NofStates
+    indices /= NofStates
+    res[0] = indices
+    return res
+
+def ComputeAccuracy(X1, GT):
+    Ccnt = 0
+    for b in xrange(GT.shape[0]):
+        if(int(X1[b]) == int(GT[b])):
+            Ccnt += 1
+    res = Ccnt * 1.0 / GT.shape[0]
+    return res

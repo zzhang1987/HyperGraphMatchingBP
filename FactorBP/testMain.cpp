@@ -46,7 +46,7 @@ int main(int argc, char **argv){
     
     FG.AddAuctionFactor();
     FG.SetVerbose(true);
-    FG.SetMinDualDecrease(1e-5);
+    FG.SetMinDualDecrease(1e-8);
     FG.Solve(100);
     
     

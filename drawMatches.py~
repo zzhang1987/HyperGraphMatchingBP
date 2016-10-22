@@ -1,0 +1,18 @@
+import matplotlib
+import matplotlib.pyplot as plt
+
+
+
+def drawMatches(I1, I2, G1, G2, matches, IsCorrect):
+    matplotlib.use('AGG')
+    w1 = I1.shape[0]
+    h1 = I1.shape[1]
+
+    w2 = I2.shape[0]
+    w2 = I2.shape[1]
+
+    fig = plt.figure()
+
+    
+
+    

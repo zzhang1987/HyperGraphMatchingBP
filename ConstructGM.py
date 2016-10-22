@@ -67,7 +67,7 @@ def ConstructG(Edges1, Edges2, KP, KQ, isSparse):
                 xj = Edges2[1][j]
                 xij = int(xi * NofNodes + xj)
                 nnzV[j] = EPotentials[xij]
-                print EPotentials[xij]
+                #print EPotentials[xij]
 
             ENodes = FB.VecInt(2);
             ENodes[0] = ei

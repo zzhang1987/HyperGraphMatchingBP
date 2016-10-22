@@ -1,8 +1,6 @@
-import numpy as np
-import copy
-from FactorBP.FactorGraph import CFactorGraph
-
 import time
+
+import numpy as np
 class PQueueNode:
     Next = None;
     data = None;
@@ -90,6 +88,7 @@ class BaBRes:
 
 def BaBSolver(G,outIter, inIter, maxGap, verbose):
     start_time = time.time()
+    G.Solve(400)
     time_dur = None
     #G.Solve(20)
     Q = PQueue()

@@ -22,12 +22,14 @@ endmacro(ADD_USER_FRAMEWORK)
 
 
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -std=c++1y") 
 
 SET(LIBSRCS Auction.cpp
 	    FactorCreator.cpp
 	    Factor.cpp
 	    FactorGraph.cpp
 	    SubTourFactor.cpp
+	    Tools.cpp
 	    Auction.h
 	    FactorCreator.h
 	    FactorStore.h
@@ -36,7 +38,8 @@ SET(LIBSRCS Auction.cpp
 	    PRTypes.h
 	    Factor.h
 	    FactorGraphStore.h
-	    SubTourFactor.h)
+	    SubTourFactor.h
+	    Tools.h)
 
 set (HEADERS  Auction.h
 	    FactorCreator.h
