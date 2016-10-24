@@ -118,9 +118,9 @@ if isempty(indH3) && isempty(valH3)
 end
 
 if exist('X0', 'var')
-  X1 = zeros(NofNodes, NofNodes)
+  X1 = zeros(NofNodes, NofNodes);
   for xi = 1:NofNodes
-      X1(xi, X0(xi) + 1) = 1;
+      X1( X0(xi) + 1, xi) = NofNodes;
   end
   X0 = X1;
 else
