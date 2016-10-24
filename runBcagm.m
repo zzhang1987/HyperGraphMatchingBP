@@ -82,16 +82,16 @@ if exist('KQ', 'var')
     J1 = repmat(E1(:,2), [1, size(E2,1)]);
     I2 = repmat(E2(:,1)', [size(E1,1), 1]);
     J2 = repmat(E2(:,2)', [size(E1,1), 1]);
-    
+
     idx1 = I1 * NofNodes + I2;
     idx2 = J1 * NofNodes + J2;
-    
+
     indH2 = [idx1(:), idx2(:)];
     valH2 = KQ(:)/2;
-    
+
     indH2 = [indH2; indH2(:,2), indH2(:,1)];
     valH2 = [valH2; valH2];
-    
+
 end
 
 if ~exist('indH1','var')
@@ -117,10 +117,15 @@ if isempty(indH3) && isempty(valH3)
   valH3=zeros(0,1);
 end
 
-
-
+if exist('X0', 'var')
+  X1 = zeros(NofNodes, NofNodes)
+  for xi = 1:NofNodes
+      X1(xi, X0(xi) + 1) = 1;
+  end
+  X0 = X1;
+else
 X0 = ones(NofNodes, NofNodes);
-
+end
 X0 = [X0(:); X0(:); X0(:); X0(:)];
 maxIter = 30;
 tstart = tic;
@@ -134,4 +139,3 @@ X = asgHun(X);
 res = getMatchScore(int32(indH3), valH3, X);
 [~, id] = max(X);
 id = int32(id - 1);
-

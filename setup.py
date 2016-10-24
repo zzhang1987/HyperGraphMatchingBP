@@ -4,7 +4,7 @@ from distutils.core import setup, Extension
 
 
 FactorGraph_module = Extension('FactorBP._FactorGraph',
-                            sources=['FactorBP/FactorGraph.i','FactorBP/FactorGraph.cpp', 'FactorBP/FactorCreator.cpp', 'FactorBP/Factor.cpp', 'FactorBP/Auction.cpp', 'FactorBP/SubTourFactor.cpp', 'FactorBP/Tools.cpp'],
+                            sources=['FactorBP/FactorGraph.i','FactorBP/FactorGraph.cpp', 'FactorBP/FactorCreator.cpp', 'FactorBP/Factor.cpp', 'FactorBP/Auction.cpp', 'FactorBP/SubTourFactor.cpp'],
                             swig_opts=['-modern','-c++','-I./FactorBP'],
                             extra_compile_args=['-F/Library/Frameworks/','-O3','-framework', 'boost','-DPERFECT_MATCHING_DOUBLE', '-std=c++11','-DPERFECT_MATCHING_DOUBLE', '-ffast-math', '-pipe', '-fomit-frame-pointer', '-std=c++11', '-stdlib=libc++'],
                            )
