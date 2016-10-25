@@ -1,69 +1,48 @@
-from FactorGraph import *;
-import numpy as np;
+import FactorBP as FB
+import numpy as np
 
 
-np.random.seed(3297461);
+np.random.seed(3297461)
 
 
 NofNodes = 3;
-NofStates = intArray(NofNodes);
+NofStates = FB.intArray(NofNodes);
 for i in range(NofNodes):
     NofStates[i] = NofNodes
 
-G = CFactorGraph(NofNodes, NofStates)
+NofStates[0] = 3
+NofStates[1] = 2
+NofStates[2] = 3
+
+G = FB.CFactorGraph(NofNodes, NofStates)
 
 
-Potentials  = doubleArray(3);
 
 for i in range(NofNodes):
-    for j in range(NofNodes):
+    Potentials = FB.doubleArray(NofStates[i])
+    for j in range(NofStates[i]):
         Potentials[j] = np.random.normal();
 
     G.AddNodeBelief(i, Potentials);
 
 
-EdgePotentials = doubleArray(NofNodes * NofNodes);
+EdgePotentials = FB.doubleArray(3 * 2);
 
-for i in range(NofNodes * NofNodes):
+for i in range(6):
     EdgePotentials[i] = np.random.normal();
 
 
-SparseEdgePotentials = doubleArray(NofNodes * NofNodes);
-
-for i in range(NofNodes * NofNodes):
-    SparseEdgePotentials[i] = 0;
-
-
-    
-NNZs = 3;
-
-nnzIdx = intArray(2 * NofNodes);
-
-nnzIdx[0] = 0
-nnzIdx[1] = 0
-
-nnzIdx[2] = 1
-nnzIdx[3] = 2
-
-nnzIdx[4] = 0
-nnzIdx[5] = 1
+mi = FB.doubleArray(3)
+mj = FB.doubleArray(2)
+mi[0] = 0
+mj[0] = 0
+mi[1] = 0
+mj[1] = 0
+mi[2] = 0
 
 
-for i in range(NNZs):
-    idx = nnzIdx[2 * i] * NofNodes + nnzIdx[2 * i + 1]
-    SparseEdgePotentials[idx] = np.random.normal();
-
-mi = doubleArray(NofNodes);
-mj = doubleArray(NofNodes);
-
-for i in range(NofNodes):
-    mi[i] = 0
-    mj[i] = 0
 
 G.AddEdge(0, 1, EdgePotentials);
-G.AddSparseEdge(1, 2, SparseEdgePotentials, mi, mj, NNZs, nnzIdx)
-G.AddSparseEdge(2, 0, SparseEdgePotentials, mi, mj, NNZs, nnzIdx)
-G.AddAuctionFactor()
 
 G.PrintFactorInfo();
 for iter in range(100):
