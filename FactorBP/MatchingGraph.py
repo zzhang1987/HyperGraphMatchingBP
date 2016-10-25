@@ -97,7 +97,7 @@ def ComputeFeatureDistance(F1, F2):
     res = np.zeros([F1.shape[0], F2.shape[0]])
     for i in range(F1.shape[0]):
         for j in range(F2.shape[0]):
-            res[i][j] = np.linalg.norm(F1[i] - F2[j])
+            res[i][j] = (np.linalg.norm(F1[i] - F2[j]))
     return res
 def ComputeMultiAngleDistance(F1,F2):
     res = np.zeros([F1.shape[0], F2.shape[0]])
@@ -144,7 +144,14 @@ def ComputeKQ(G1, G2, Type):
 
         KQ = np.exp(-(distTable + agdistTable)/2)
         KQ1 = np.exp(-(distTable + agdistTable1)/2)
-    return (KQ + KQ1)
+        KQ = KQ + KQ1
+    if(Type == 'cmu'):
+        distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
+                                           np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
+        
+        KQ = np.exp(-(distTable**2)/2500) * 2
+        
+    return KQ
 
 def ComputeKT(G1,G2):
     distTable = ComputeMultiAngleDistance(G1.TFeature, G2.PTFeature)
@@ -263,7 +270,7 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
     KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature)
     KQ = ComputeKQ(G1, G2, Type)
     KT = ComputeKT(G1, G2)
-    KP = np.exp(-KP)
+    KP = np.exp(-(KP))
     NofNodes = G1.NofNodes
     NofStates = intArray(NofNodes)
     for i in range(NofNodes):
@@ -293,14 +300,43 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
         CurrentAssign[2] = int(G2.PermunatedTriplets[ni][2])
         nnzTripIdx[ni] = CurrentAssign
 
+
+    NNZs = KQ.shape[1]
+    nnzIdx = intArray(2 * NNZs)
+    for j in range(G2.Edges.shape[0]):
+        xi = G2.Edges[j][0]
+        xj = G2.Edges[j][1]
+        nnzIdx[2 * j] = int(xi)
+        nnzIdx[2 * j + 1] = int(xj)
+    baseIdx = 2 * G2.Edges.shape[0]
+    for j in range(G2.Edges.shape[0]):
+        xi = G2.Edges[j][1]
+        xj = G2.Edges[j][0]
+        nnzIdx[baseIdx + 2 * j] = int(xi)
+        nnzIdx[baseIdx + 2 * j + 1] = int(xj)
+    
+    mi = doubleArray(NofNodes);
+    mj = doubleArray(NofNodes);
+    for i in range(NofNodes):
+        mi[i] = 0
+        mj[i] = 0
     for ei in range(KQ.shape[0]):
+        EPotentials = doubleArray(NofNodes * NofNodes)
+        for xij in range(NofNodes * NofNodes):
+            EPotentials[xij] = 0;
+        cei = G1.Edges[ei][0]
+        cej = G1.Edges[ei][1]
         CEdgeVec = VecInt(2)
         CEdgeVec[0] = int(G1.Edges[ei][0])
         CEdgeVec[1] = int(G1.Edges[ei][1])
         CurrentNNZV = doubleArray(KQ.shape[1])
         for xij in range(KQ.shape[1]):
+            rxij = int(nnzIdx[2 * xij] * NofNodes + nnzIdx[2 * xij + 1])
+            EPotentials[rxij] = KQ[ei][xij]
             CurrentNNZV[xij] = KQ[ei][xij]
-        G.AddGenericGenericSparseFactor(CEdgeVec, nnzEdgeIdx, CurrentNNZV)
+        #G.AddGenericGenericSparseFactor(CEdgeVec, nnzEdgeIdx, CurrentNNZV)
+        G.AddSparseEdgeNZ(cei, cej, EPotentials, mi, mj, NNZs, nnzIdx)
+
 
     if(AddTriplet == False):
         G.AddAuctionFactor()
