@@ -685,12 +685,12 @@ namespace zzhang{
 
 
      class CGeneralSparseFactor : public CFactorBase{
-     private:
+     proctected:
 	  Real * m_NNZValues;
 	  std::vector< int > m_Nodes;
 	  std::vector< std::vector<int> > m_NNZs;
 	  std::vector< Real *> m_Messages;
-      std::vector< Real *> m_MaxMarginals;
+	  std::vector< Real *> m_MaxMarginals;
 
 	  std::vector< NodeFactor* > m_NodeFactors;
          std::unordered_map< std::vector<int>, double, container_hash< std::vector<int> > > m_NNZMap;
@@ -737,10 +737,9 @@ namespace zzhang{
           * Return a vector, which contains all the nodes included in the factor
           */
          virtual bool GetIncludedNodes(std::vector<int>& nodes) ;
-         
-         
-
      };
+
+     
 }
 
 #endif // FACTOR_H
