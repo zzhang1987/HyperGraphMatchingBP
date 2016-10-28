@@ -4,6 +4,31 @@ from FactorBP.FactorGraph import *
 from sklearn.neighbors import KDTree
 import scipy.io as sio
 
+def GenRandomMatchingPoints(NofInliers, Scale, Noise, NofOutliers):
+    MaxSize = 100
+    PT1 = np.random.rand(NofInliers, 2) * MaxSize
+    Ou1 = np.random.rand(NofOutliers, 2) * MaxSize
+    Ou2 = np.random.rand(NofOutliers, 2) * MaxSize
+    PT1Homo = np.append(PT1, np.ones([NofInliers, 1]), axis = 1)
+
+    PT1Homo = PT1Homo.transpose()
+
+    theta = np.random.rand() * 2 * np.pi
+
+    TransMat = np.zeros([3,3])
+    TransMat[:,2] = np.random.rand(3) * 20
+    TransMat[2][2] = 1
+
+    TransMat[0][0] = np.cos(theta) * Scale
+    TransMat[0][1] = -np.sin(theta) * Scale
+    TransMat[1][0] = np.sin(theta) * Scale
+    TransMat[1][1] = np.cos(theta) * Scale
+
+    PT2Trans = TransMat.dot(PT1Homo) + Noise * np.random.rand(3, NofNodes)
+    PT2Homo = PT2Trans.transpose()
+    PT2 = PT2Homo[:,0:2]
+    return PT1,PT2
+
 def PermunateTriplets(T):
     T2 = np.copy(T)
     T3 = np.copy(T)

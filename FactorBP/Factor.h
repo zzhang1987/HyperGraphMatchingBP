@@ -739,7 +739,6 @@ namespace zzhang{
          virtual bool GetIncludedNodes(std::vector<int>& nodes) ;
      };
 
-     
 }
 
 #endif // FACTOR_H
