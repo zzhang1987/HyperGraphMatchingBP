@@ -380,7 +380,10 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
         CTripletsVec[2] = int(G1.Triplets[ti][2])
         CurrentNNZV = doubleArray(KT.shape[1])
         for xijk in range(KT.shape[1]):
-            CurrentNNZV[xijk] = 0.32 * KT[ti][xijk]
+            if(Type == 'pas'):
+                CurrentNNZV[xijk] = 0.32 * KT[ti][xijk]
+            else:
+                CurrentNNZV[xijk] = KT[ti][xijk]
         G.AddGenericGenericSparseFactor(CTripletsVec, nnzTripIdx, CurrentNNZV)
 
     G.AddAuctionFactor()
