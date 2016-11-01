@@ -23,6 +23,7 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <algorithm>
 
 #include "PRTypes.h"
 #include "FactorStore.h"

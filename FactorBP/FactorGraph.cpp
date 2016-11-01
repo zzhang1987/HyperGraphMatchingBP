@@ -216,9 +216,9 @@ void zzhang::CFactorGraph::UpdateMessages()
 		for(int ii = 0; ii < m_PrimalDualGap.size(); ii++)
 		{
 		     long i = m_PrimalDualGap[ii].first;
-		     if((-m_Factors[i]->Primal(m_CurrentDecode)) < 1e-8){
-			  continue;
-		     }
+		     //if((-m_Factors[i]->Primal(m_CurrentDecode)) < 1e-8){
+		     //	  continue;
+		     //}
 		     m_Factors[i]->UpdateMessages();
 		}
 	   }

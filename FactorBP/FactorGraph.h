@@ -20,6 +20,7 @@
 #include <ctime>
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
+#include <algorithm>
 #include "PRTypes.h"
 #include "Factor.h"
 #include "FactorGraphStore.h"
