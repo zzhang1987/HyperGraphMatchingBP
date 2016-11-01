@@ -9,7 +9,7 @@ void zzhang::CAuctionFactor::Auction(){
 	  {
 	       bi[i][j] += prices[j];
 	  }
-	  //prices[j] = 0.0;
+	  prices[j] = 0.0;
      }
 #if 0
      for(int i = 0; i < NofNodes; i++)
@@ -22,7 +22,7 @@ void zzhang::CAuctionFactor::Auction(){
 	  }
      }
 #endif	       
-     double epsilon = 1.0;
+     double epsilon = 5.0;
      while(epsilon > 1e-5)
      {
 	  memset(AssignMent, -1, sizeof(int) * NofNodes);

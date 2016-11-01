@@ -23,6 +23,7 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <algorithm>
 
 #include "PRTypes.h"
 #include "FactorStore.h"
@@ -685,7 +686,7 @@ namespace zzhang{
 
 
      class CGeneralSparseFactor : public CFactorBase{
-     proctected:
+     protected:
 	  Real * m_NNZValues;
 	  std::vector< int > m_Nodes;
 	  std::vector< std::vector<int> > m_NNZs;
