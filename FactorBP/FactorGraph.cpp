@@ -212,6 +212,7 @@ bool zzhang::CFactorGraph::ReStoreDual(FactorGraphDualStore *store)
 void zzhang::CFactorGraph::UpdateMessages()
 {
            long start = random();
+	   #if 0
 	   if(m_PrimalDualGap.size() != 0){
 		for(int ii = 0; ii < m_PrimalDualGap.size(); ii++)
 		{
@@ -228,6 +229,12 @@ void zzhang::CFactorGraph::UpdateMessages()
 		     long i = (ii + start) % m_Factors.size();
 		     m_Factors[i]->UpdateMessages();
 		}
+	   }
+	   #endif
+	   for(int ii = 0; ii < m_Factors.size(); ii++)
+	   {
+		long i = (ii + start) % m_Factors.size();
+		m_Factors[i]->UpdateMessages();
 	   }
 	   if(auFactor)
 	   {

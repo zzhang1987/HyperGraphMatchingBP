@@ -3,29 +3,82 @@ import numpy as np
 from FactorBP.FactorGraph import *
 from sklearn.neighbors import KDTree
 import scipy.io as sio
+def rand_rotation_matrix(deflection=1.0, randnums=None):
+    """
+    Creates a random rotation matrix.
+    
+    deflection: the magnitude of the rotation. For 0, no rotation; for 1, competely random
+    rotation. Small deflection => small perturbation.
+    randnums: 3 random numbers in the range [0, 1]. If `None`, they will be auto-generated.
+    """
+    # from http://www.realtimerendering.com/resources/GraphicsGems/gemsiii/rand_rotation.c
+    
+    if randnums is None:
+        randnums = np.random.uniform(size=(3,))
+        
+    theta, phi, z = randnums
+    
+    theta = theta * 2.0*deflection*np.pi  # Rotation about the pole (Z).
+    phi = phi * 2.0*np.pi  # For direction of pole deflection.
+    z = z * 2.0*deflection  # For magnitude of pole deflection.
+    
+    # Compute a vector V used for distributing points over the sphere
+    # via the reflection I - V Transpose(V).  This formulation of V
+    # will guarantee that if x[1] and x[2] are uniformly distributed,
+    # the reflected points will be uniform on the sphere.  Note that V
+    # has length sqrt(2) to eliminate the 2 in the Householder matrix.
+    
+    r = np.sqrt(z)
+    Vx, Vy, Vz = V = (
+        np.sin(phi) * r,
+        np.cos(phi) * r,
+        np.sqrt(2.0 - z)
+        )
+    
+    st = np.sin(theta)
+    ct = np.cos(theta)
+    
+    R = np.array(((ct, st, 0), (-st, ct, 0), (0, 0, 1)))
+    
+    # Construct the rotation matrix  ( V Transpose(V) - I ) R.
+    
+    M = (np.outer(V, V) - np.eye(3)).dot(R)
+    return M
 
-def GenRandomMatchingPoints(NofInliers, Scale, theta = 0, Noise, NofOutliers):
+
+
+def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     MaxSize = 100
-    PT1 = np.random.rand(NofInliers, 2) * MaxSize
+    PT1 = np.random.rand(NofInliers, 3) * MaxSize
+    PT1[:,2] /= 3
+    
     Ou1 = np.random.rand(NofOutliers, 2) * MaxSize
     Ou2 = np.random.rand(NofOutliers, 2) * MaxSize
-    PT1Homo = np.append(PT1, np.ones([NofInliers, 1]), axis = 1)
+    #PT1Homo = np.append(PT1, np.ones([NofInliers, 1]), axis = 1)
 
-    PT1Homo = PT1Homo.transpose()
+    PT1Homo = PT1.transpose()
 
 
-    TransMat = np.zeros([3,3])
-    TransMat[2][2] = 1
+    TransMat = rand_rotation_matrix()
+    #TransMat[2][2] = 1
 
-    TransMat[0][0] = np.cos(theta) * Scale
-    TransMat[0][1] = -np.sin(theta) * Scale
-    TransMat[1][0] = np.sin(theta) * Scale
-    TransMat[1][1] = np.cos(theta) * Scale
+    #TransMat[0][0] = np.cos(theta) * Scale
+    #TransMat[0][1] = -np.sin(theta) * Scale
+    #TransMat[1][0] = np.sin(theta) * Scale
+    #TransMat[1][1] = np.cos(theta) * Scale
 
-    PT2Trans = TransMat.dot(PT1Homo) + Noise * np.random.rand(3, NofNodes)
+    PT2Trans = TransMat.dot(PT1Homo) + Noise * np.random.rand(3, NofInliers)
     PT2Homo = PT2Trans.transpose()
     PT2 = PT2Homo[:,0:2]
-    return PT1,PT2
+
+
+    Ous1 = np.random.rand(NofOutliers, 2) * MaxSize 
+    Ous2 = np.random.rand(NofOutliers, 2) * MaxSize * Scale 
+    PT1 = PT1[:,0:2]
+    PT11 = np.append(PT1, Ous1, axis = 0)
+    PT22 = np.append(PT2, Ous2, axis = 0)
+    
+    return PT11,PT22
 
 def PermunateTriplets(T):
     T2 = np.copy(T)
@@ -173,7 +226,14 @@ def ComputeKQ(G1, G2, Type):
                                            np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
         
         KQ = np.exp(-(distTable**2)/2500) * 2
-        
+    if(Type == 'syn'):
+        distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
+                                           np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
+        for i in range(NofEdges1):
+            for j in range(G2.Edges.shape[0]):
+                distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
+                distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
+        KQ = np.exp(-(distTable)) * 2
     return KQ
 
 def ComputeKT(G1,G2):
