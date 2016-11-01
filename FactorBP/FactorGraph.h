@@ -245,9 +245,15 @@ namespace zzhang{
 	       return true;
 	  }
 
+
+
 	  double DualValue(){return Dual;}
 	  double PrimalValue(){return BestDecodeV;}
 
+	  int ResetPrimal(){
+	       BestDecodeV = -1e20;
+	  }
+	  
 	  MostFractionalNodes FindMostFracNodes()
 	  {
 	       MostFractionalNodes res;
