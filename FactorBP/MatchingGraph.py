@@ -4,7 +4,7 @@ from FactorBP.FactorGraph import *
 from sklearn.neighbors import KDTree
 import scipy.io as sio
 
-def GenRandomMatchingPoints(NofInliers, Scale, Noise, NofOutliers):
+def GenRandomMatchingPoints(NofInliers, Scale, theta = 0, Noise, NofOutliers):
     MaxSize = 100
     PT1 = np.random.rand(NofInliers, 2) * MaxSize
     Ou1 = np.random.rand(NofOutliers, 2) * MaxSize
@@ -13,10 +13,8 @@ def GenRandomMatchingPoints(NofInliers, Scale, Noise, NofOutliers):
 
     PT1Homo = PT1Homo.transpose()
 
-    theta = np.random.rand() * 2 * np.pi
 
     TransMat = np.zeros([3,3])
-    TransMat[:,2] = np.random.rand(3) * 20
     TransMat[2][2] = 1
 
     TransMat[0][0] = np.cos(theta) * Scale
