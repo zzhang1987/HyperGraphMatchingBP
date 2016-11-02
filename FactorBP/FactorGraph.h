@@ -177,7 +177,6 @@ namespace zzhang{
 	       }
 	  }
          
-         static bool UpdateMessages(std::vector<FactorBase *>& Factors, std::mutex )
 	  /**
 	   * Update messages
 	   */
