@@ -62,8 +62,8 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     TransMat2 = np.zeros([3,3]);
     TransMat3 = np.zeros([3,3]);
 
-    theta1 = (np.random.rand() - 0.5) * 0.5
-    theta2 = (np.random.rand() - 0.5) * 0.5
+    theta1 = (np.random.rand() - 0.5) * 0
+    theta2 = (np.random.rand() - 0.5) * 0
     
     TransMat1[1][1] = 1
     TransMat1[0][0] = np.cos(theta1)
