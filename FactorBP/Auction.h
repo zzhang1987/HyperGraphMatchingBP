@@ -71,19 +71,7 @@ namespace zzhang{
 	       std::vector<int> tmpBidded;
 	       std::vector<double> tmpBids;
 	       std::vector<int> unAssig;
-#if 0
-	       for(int i = 0; i < NofNodes; i++)
-	       {
-		    if(Evid[i] > 0)
-		    {
-			 int j = Evid[i] - 1;
-			 AssignMent[i] = j;
-			 prices[j] = 0;
-			 //std::cout << "i " << i << " j " << j << std::endl;
-		    }
-		    
-	       }
-#endif
+
 	       for(int i = 0; i < NofNodes; i++)
 	       {
 		    if(AssignMent[i] == -1 /*&& Evid[i] <= 0*/)
