@@ -45,6 +45,8 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
     M = (np.outer(V, V) - np.eye(3)).dot(R)
     return M
 
+
+
 def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     MaxSize = 100
     PT1 = np.random.rand(NofInliers, 3) * MaxSize
@@ -474,14 +476,7 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
         CTripletsVec[2] = int(G1.Triplets[ti][2])
         CurrentNNZV = doubleArray(KT.shape[1])
         for xijk in range(KT.shape[1]):
-<<<<<<< HEAD
-            if(Type == 'pas'):
-                CurrentNNZV[xijk] = 0.32 * KT[ti][xijk]
-            else:
-                CurrentNNZV[xijk] = KT[ti][xijk]
-=======
             CurrentNNZV[xijk] = KT[ti][xijk]
->>>>>>> 333aa2aba1fa9e5c7af1887b32e41927bc01833e
         G.AddGenericGenericSparseFactor(CTripletsVec, nnzTripIdx, CurrentNNZV)
 
     G.AddAuctionFactor()
