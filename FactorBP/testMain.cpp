@@ -33,15 +33,19 @@ int main(int argc, char **argv){
     FG.AddNodeBelief(1, NodeBliefs[1]);
     FG.AddNodeBelief(2, NodeBliefs[2]);
     std::vector< std::vector<int> > NNZs(2);
-    std::vector<int> Nodes(2);
+    std::vector<int> Nodes(3);
     Nodes[0] = 0;
     Nodes[1] = 1;
-    NNZs[0] = std::vector<int>(2);
+    Nodes[2] = 2;
+    NNZs[0] = std::vector<int>(3);
     NNZs[0][0] = 0;
-    NNZs[0][1] = 0;
-    NNZs[1] = std::vector<int>(2);
+    NNZs[0][1] = 1;
+    NNZs[0][2] = 2;
+    NNZs[1] = std::vector<int>(3);
     NNZs[1][0] = 1;
-    NNZs[1][1] = 1;
+    NNZs[1][1] = 2;
+    NNZs[1][1] = 0;
+    
     FG.AddGenericGenericSparseFactor(Nodes, NNZs, NNZV);
     
     FG.AddAuctionFactor();

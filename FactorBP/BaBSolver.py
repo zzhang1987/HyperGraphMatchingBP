@@ -73,9 +73,7 @@ class BaBNode:
         return False
 
     def __gt__(self, other):
-        if (self.UB < other.UB):
-            return True
-        elif ((self.UB == other.UB) & (self.Gap >= other.Gap)):
+        if (self.UB <= other.UB):
             return True
         return False
 
@@ -120,6 +118,9 @@ def BaBSolver(G,outIter, inIter, maxGap, verbose):
             G.ReStoreDual(cNode.DualStore)
         if(cNode.Node != None):
             G.SetDecode(cNode.Node, cNode.AssignMent)
+
+
+
         GUB = cNode.UB
         G.Solve(inIter)
         LB = G.PrimalValue()
@@ -139,6 +140,9 @@ def BaBSolver(G,outIter, inIter, maxGap, verbose):
 
         MFNode = G.FindMostFracNodes()
         GStore = G.StoreDual()
+        #for N in range(G.NofNodes()):
+        #    Node = BaBNode(GStore,GB,LB,MFNode.Nodes, N + 1, MFNode.gap)
+        #    Q.insert(Node)
         Node2 = BaBNode(GStore,GB,LB,MFNode.Nodes, -(MFNode.States + 1), MFNode.gap)
         Node1 = BaBNode(GStore,GB,LB,MFNode.Nodes, MFNode.States + 1, MFNode.gap)
 
