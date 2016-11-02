@@ -21,6 +21,8 @@
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <algorithm>
+#include <mutex>
+#include <thread>
 #include "PRTypes.h"
 #include "Factor.h"
 #include "FactorGraphStore.h"
@@ -29,17 +31,12 @@
 #include "SubTourFactor.h"
 
 namespace zzhang{
-
-
-     
      
      /**
       * A factor graph; This class is used to do MAP inference over an factor graph.
       */
      class CFactorGraph{
     	  
-     public:
-	  
      private:
 	  /**
 	   * Number of Nodes;
@@ -177,7 +174,6 @@ namespace zzhang{
 	       }
 	  }
          
-         static bool UpdateMessages(std::vector<FactorBase *>& Factors, std::mutex )
 	  /**
 	   * Update messages
 	   */
@@ -256,7 +252,7 @@ namespace zzhang{
 	  double DualValue(){return Dual;}
 	  double PrimalValue(){return BestDecodeV;}
 
-	
+	  int NofNodes(){return m_NofNodes;}
 	  
 	  MostFractionalNodes FindMostFracNodes()
 	  {

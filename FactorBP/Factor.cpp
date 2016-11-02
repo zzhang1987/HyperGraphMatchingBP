@@ -147,6 +147,248 @@ Real zzhang::CGeneralSparseFactor::Dual(){
 }
 
 void zzhang::CGeneralSparseFactor::UpdateMessages(){
+     //Particularly optimized for order 3 problems
+     if(m_Messages.size() == 3){
+	  int NSize = m_Messages.size();
+	  std::vector< std::pair<int, Real> > MaxVs(NSize);
+	  std::vector< std::pair<int, Real> > SecMaxVs(NSize);
+	  std::vector< std::pair<int, Real> > ThirdVs(NSize);
+	  
+	  for(int i = 0; i < m_Messages.size(); i++)
+	  {
+	        int NofStates = m_NodeFactors[i]->m_NofStates;
+		Real* bi = m_NodeFactors[i]->m_bi;
+		Real* mi = m_Messages[i];
+		MaxVs[i] = std::pair<int, Real>(0, bi[0] - mi[0]);
+		SecMaxVs[i] = std::pair<int, Real>(0,
+						   -std::numeric_limits<double>::infinity());
+		ThirdVs[i] = std::pair<int, Real>(0,
+						   -std::numeric_limits<double>::infinity());
+		mi[0] = bi[0] - mi[0];
+		for(int xi = 1; xi < NofStates; xi++)
+		{
+		     mi[xi] = bi[xi] - mi[xi];
+		     if(mi[xi] > MaxVs[i].second){
+			  ThirdVs[i] = SecMaxVs[i];
+			  SecMaxVs[i] = MaxVs[i];
+			  MaxVs[i] = std::pair<int, Real>(xi, mi[xi]);
+		     }
+		     else if(mi[xi] > SecMaxVs[i].second){
+			  ThirdVs[i] = SecMaxVs[i];
+			  SecMaxVs[i] = std::pair<int, Real>(xi, mi[xi]);
+		     }
+		     else if(mi[xi] > ThirdVs[i].second){
+			  ThirdVs[i] = std::pair<int, Real>(xi, mi[xi]);
+		     }
+		}
+	  }
+	  std::vector< std::vector< std::pair<std::pair<int,int>, Real > > > LocalMaxAssign(NSize);
+	  int LocalMaxIdx[3][2] = {{1,2}, {0,2}, {0,1}};
+	  for(int li = 0; li < NSize; li++){
+	       LocalMaxAssign[li] = std::vector< std::pair<std::pair<int,int>, Real > >(NSize);
+	       std::pair<int, Real> NMaxVi = MaxVs[LocalMaxIdx[li][0]];
+	       std::pair<int, Real> NSecVi = SecMaxVs[LocalMaxIdx[li][0]];
+
+		     
+	       std::pair<int, Real> NMaxVj = MaxVs[LocalMaxIdx[li][1]];
+	       std::pair<int, Real> NSecVj = SecMaxVs[LocalMaxIdx[li][1]];
+
+	       if(NMaxVi.first != NMaxVj.first){
+		    LocalMaxAssign[li][0] = std::pair< std::pair<int,int>, Real>(
+			 std::pair<int,int>(NMaxVi.first, NMaxVj.first),
+			 NMaxVi.second + NMaxVj.second);
+	       }
+	       else{
+		    if(NMaxVi.second - NSecVi.second < NMaxVj.second - NSecVj.second){
+			 LocalMaxAssign[li][0] = std::pair< std::pair<int,int>, Real>(
+			      std::pair<int,int>(NSecVi.first, NMaxVj.first),
+			      NSecVi.second + NMaxVj.second);
+		    }
+		    else{
+			 LocalMaxAssign[li][0] = std::pair< std::pair<int,int>, Real>(
+			      std::pair<int,int>(NMaxVi.first, NSecVj.first),
+			      NMaxVi.second + NSecVj.second);
+		    }
+	       }
+		     
+	  }
+	  for(int li = 0; li < NSize; li++){
+	       std::pair<int, Real> NMaxVi ;
+	       std::pair<int, Real> NSecVi ;
+
+		     
+	       std::pair<int, Real> NMaxVj ;
+	       std::pair<int, Real> NSecVj ;
+
+	       int forbiddenL = LocalMaxAssign[li][0].first.first;
+
+	       if(MaxVs[LocalMaxIdx[li][0]].first == forbiddenL){
+		    NMaxVi = SecMaxVs[LocalMaxIdx[li][0]];
+		    NSecVi = ThirdVs[LocalMaxIdx[li][0]];
+	       }
+	       else if(SecMaxVs[LocalMaxIdx[li][0]].first == forbiddenL)
+	       {
+		    NMaxVi = MaxVs[LocalMaxIdx[li][0]];
+		    NSecVi = ThirdVs[LocalMaxIdx[li][0]];
+	       }
+	       else{
+		    NMaxVi = MaxVs[LocalMaxIdx[li][0]];
+		    NSecVi = SecMaxVs[LocalMaxIdx[li][0]];
+	       }
+
+		     
+	       if(MaxVs[LocalMaxIdx[li][1]].first == forbiddenL){
+		    NMaxVj = SecMaxVs[LocalMaxIdx[li][1]];
+		    NSecVj = ThirdVs[LocalMaxIdx[li][1]];
+	       }
+	       else if(SecMaxVs[LocalMaxIdx[li][1]].first == forbiddenL)
+	       {
+		    NMaxVj = MaxVs[LocalMaxIdx[li][1]];
+		    NSecVj = ThirdVs[LocalMaxIdx[li][1]];
+	       }
+	       else{
+		    NMaxVj = MaxVs[LocalMaxIdx[li][1]];
+		    NSecVj = SecMaxVs[LocalMaxIdx[li][1]];
+	       }
+
+		     
+	       if(NMaxVi.first != NMaxVj.first){
+		    LocalMaxAssign[li][1] = std::pair< std::pair<int,int>, Real>(
+			 std::pair<int,int>(NMaxVi.first, NMaxVj.first),
+			 NMaxVi.second + NMaxVj.second);
+	       }
+	       else{
+		    if(NMaxVi.second - NSecVi.second < NMaxVj.second - NSecVj.second){
+			 LocalMaxAssign[li][1] = std::pair< std::pair<int,int>, Real>(
+			      std::pair<int,int>(NSecVi.first, NMaxVj.first),
+			      NSecVi.second + NMaxVj.second);
+		    }
+		    else{
+			 LocalMaxAssign[li][1] = std::pair< std::pair<int,int>, Real>(
+			      std::pair<int,int>(NMaxVi.first, NSecVj.first),
+			      NMaxVi.second + NSecVj.second);
+		    }
+	       }
+		     
+	  }
+		
+	  for(int li = 0; li < NSize; li++){
+	       std::pair<int, Real> NMaxVi ;
+	       std::pair<int, Real> NSecVi ;
+
+		     
+	       std::pair<int, Real> NMaxVj ;
+	       std::pair<int, Real> NSecVj ;
+
+	       int forbiddenL = LocalMaxAssign[li][0].first.second;
+
+	       if(MaxVs[LocalMaxIdx[li][0]].first == forbiddenL){
+		    NMaxVi = SecMaxVs[LocalMaxIdx[li][0]];
+		    NSecVi = ThirdVs[LocalMaxIdx[li][0]];
+	       }
+	       else if(SecMaxVs[LocalMaxIdx[li][0]].first == forbiddenL)
+	       {
+		    NMaxVi = MaxVs[LocalMaxIdx[li][0]];
+		    NSecVi = ThirdVs[LocalMaxIdx[li][0]];
+	       }
+	       else{
+		    NMaxVi = MaxVs[LocalMaxIdx[li][0]];
+		    NSecVi = SecMaxVs[LocalMaxIdx[li][0]];
+	       }
+
+		     
+	       if(MaxVs[LocalMaxIdx[li][1]].first == forbiddenL){
+		    NMaxVj = SecMaxVs[LocalMaxIdx[li][1]];
+		    NSecVj = ThirdVs[LocalMaxIdx[li][1]];
+	       }
+	       else if(SecMaxVs[LocalMaxIdx[li][1]].first == forbiddenL)
+	       {
+		    NMaxVj = MaxVs[LocalMaxIdx[li][1]];
+		    NSecVj = ThirdVs[LocalMaxIdx[li][1]];
+	       }
+	       else{
+		    NMaxVj = MaxVs[LocalMaxIdx[li][1]];
+		    NSecVj = SecMaxVs[LocalMaxIdx[li][1]];
+	       }
+
+		     
+	       if(NMaxVi.first != NMaxVj.first){
+		    LocalMaxAssign[li][2] = std::pair< std::pair<int,int>, Real>(
+			 std::pair<int,int>(NMaxVi.first, NMaxVj.first),
+			 NMaxVi.second + NMaxVj.second);
+	       }
+	       else{
+		    if(NMaxVi.second - NSecVi.second < NMaxVj.second - NSecVj.second){
+			 LocalMaxAssign[li][2] = std::pair< std::pair<int,int>, Real>(
+			      std::pair<int,int>(NSecVi.first, NMaxVj.first),
+			      NSecVi.second + NMaxVj.second);
+		    }
+		    else{
+			 LocalMaxAssign[li][2] = std::pair< std::pair<int,int>, Real>(
+			      std::pair<int,int>(NMaxVi.first, NSecVj.first),
+			      NMaxVi.second + NSecVj.second);
+		    }
+	       }
+		     
+	  }
+		
+				
+	  for(int i = 0; i < m_Messages.size(); i++)
+	  {
+	       Real *MaxMarginls = m_MaxMarginals[i];
+	       Real* mi = m_Messages[i];
+	       int NofStates = m_NodeFactors[i]->m_NofStates;
+	       for(int xi = 0; xi < NofStates; xi++ )
+	       {
+		    if(xi != LocalMaxAssign[i][0].first.first &&
+		       xi != LocalMaxAssign[i][0].first.second)
+		    {
+			 MaxMarginls[xi] = mi[xi] + LocalMaxAssign[i][0].second;
+		    }
+		    else if(xi == LocalMaxAssign[i][0].first.first){
+			 MaxMarginls[xi] = mi[xi] + LocalMaxAssign[i][1].second;
+		    }
+		    else{
+			 MaxMarginls[xi] = mi[xi] + LocalMaxAssign[i][2].second;
+		    }
+	       }
+	  }
+		
+	  for(int i = 0; i< m_NNZs.size(); i++)
+	  {
+	       Real V = m_NNZValues[i];
+	       for(int ni = 0; ni < m_NNZs[i].size(); ni++)
+	       {
+		    int xi = m_NNZs[i][ni];
+		    V += m_Messages[ni][xi];
+	       }
+	       for(int ni = 0; ni < m_NNZs[i].size(); ni++)
+	       {
+		    int xi = m_NNZs[i][ni];
+		    if(V > m_MaxMarginals[ni][xi]){
+			 m_MaxMarginals[ni][xi] = V;
+			 m_NodeFactors[ni]->m_LocalMax = xi;
+		    }
+	       }
+	  }
+	  for(int i = 0; i < m_Messages.size(); i++)
+	  {
+	       Real *MaxMarginls = m_MaxMarginals[i];
+	       Real* mi = m_Messages[i];
+	       Real* bi = m_NodeFactors[i]->m_bi;
+	       int NofStates = m_NodeFactors[i]->m_NofStates;
+	       for(int xi = 0; xi < NofStates; xi++ )
+	       {
+		    MaxMarginls[xi] /= m_Nodes.size();
+		    mi[xi] = MaxMarginls[xi] - mi[xi];
+		    bi[xi] = MaxMarginls[xi];
+	       }
+	  }
+	  return;
+     }
+
+
+     
      std::vector<Real> MaxVs(m_Nodes.size());
      Real SumMax = 0.0;
      for(int i = 0; i < m_Messages.size(); i++){

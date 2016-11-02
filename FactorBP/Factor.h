@@ -24,6 +24,7 @@
 #include <iostream>
 #include <cstring>
 #include <algorithm>
+#include <limits>
 
 #include "PRTypes.h"
 #include "FactorStore.h"
@@ -124,6 +125,9 @@ namespace zzhang{
 	   */
 	  virtual bool GetIncludedNodes(std::vector<int>& nodes) = 0;
 
+
+	  //virtual bool Marginal(Real *bi, int xi) = 0;
+	  
 	  /**
 	   * return size of Factor
 	   */
@@ -217,6 +221,9 @@ namespace zzhang{
 	       }
 	       std::cout << std::endl;
 	  }
+	  virtual bool Marginal(Real *bi, int ni){
+	       if(bi) return true;
+	  }
      private:
 	  virtual FactorStore *Store();
 	  virtual bool ReStore(FactorStore* data);
@@ -306,7 +313,26 @@ namespace zzhang{
 	  virtual bool IsGeneralFactor(){
 	       return true;
 	  }
-	  
+#if 0
+	  virtual bool Marginal(Real *bi, int ni) {
+	       if(ni == ei){
+		    for(int xi = 0; xi < NofStates[ei]; xi++)
+		    {
+			 bi[xi] = -mi[bjmax];
+		    }
+		    double bjmax = -std::numeric_limits<double>::infinity();
+		    for(int xj = 0; xj < NofStates[ej]; xj++){
+			 if(-mj[xj] > bjmax) bjmax = -mj[xj];
+		    }
+		    
+	       }
+	       else if(ni == ej){
+	       }
+	       else{
+		    return false
+	       }
+	  }
+#endif	  
 	  virtual void UpdateMessages(){
 	       Real LocalMaxV = -ZZHANG_DBL_MAX;
 	       Real Maxi = -ZZHANG_DBL_MAX;
