@@ -17,7 +17,7 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
         randnums = np.random.uniform(size=(3,))
         
     theta, phi, z = randnums
-    
+  
     theta = theta * 2.0*deflection*np.pi  # Rotation about the pole (Z).
     phi = phi * 2.0*np.pi  # For direction of pole deflection.
     z = z * 2.0*deflection  # For magnitude of pole deflection.
@@ -48,7 +48,7 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
 def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     MaxSize = 100
     PT1 = np.random.rand(NofInliers, 3) * MaxSize
-    PT1[:,2] /= 3
+    PT1[:,2] /= 50
     
     Ou1 = np.random.rand(NofOutliers, 2) * MaxSize
     Ou2 = np.random.rand(NofOutliers, 2) * MaxSize
@@ -56,18 +56,50 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
 
     PT1Homo = PT1.transpose()
 
+    TransMat1 = np.zeros([3,3]);
+    TransMat2 = np.zeros([3,3]);
+    TransMat3 = np.zeros([3,3]);
 
-    TransMat = rand_rotation_matrix()
+    theta1 = (np.random.rand() - 0.5) * 0
+    theta2 = (np.random.rand() - 0.5) * 0
+    
+    TransMat1[1][1] = 1
+    TransMat1[0][0] = np.cos(theta1)
+    TransMat1[0][2] = -np.sin(theta1)
+    TransMat1[2][0] = np.sin(theta1)
+    TransMat1[2][2] = np.cos(theta1)
+
+    TransMat2[0][0] = 1
+    TransMat2[1][1] = np.cos(theta2)
+    TransMat2[1][2] = -np.sin(theta2)
+    TransMat2[2][1] = np.sin(theta2)
+    TransMat2[2][2] = np.cos(theta2)
+
+    TransMat3[2][2] = 1
+    TransMat3[0][0] = np.cos(theta)
+    TransMat3[0][1] = -np.sin(theta)
+    TransMat3[1][0] = np.sin(theta)
+    TransMat3[1][1] = np.cos(theta)
+
+
+    
+
+    TransMat = Scale * (TransMat1.dot(TransMat2)).dot(TransMat3)
+    #TransMat = rand_rotation_matrix()
     #TransMat[2][2] = 1
 
     #TransMat[0][0] = np.cos(theta) * Scale
     #TransMat[0][1] = -np.sin(theta) * Scale
     #TransMat[1][0] = np.sin(theta) * Scale
     #TransMat[1][1] = np.cos(theta) * Scale
-
-    PT2Trans = TransMat.dot(PT1Homo) + Noise * np.random.rand(3, NofInliers)
+    print(TransMat)
+    PT2Trans = TransMat.dot(PT1Homo) #+ Noise * np.random.rand(3, NofInliers)
     PT2Homo = PT2Trans.transpose()
     PT2 = PT2Homo[:,0:2]
+    theta3 = np.random.rand(NofInliers,1) * np.pi * 2
+    N = np.append(np.cos(theta3), np.sin(theta3), axis=1)
+
+    PT2 = PT2 + N * Noise * Scale
 
 
     Ous1 = np.random.rand(NofOutliers, 2) * MaxSize 
@@ -232,6 +264,16 @@ def ComputeKQ(G1, G2, Type):
                 distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
                 distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
         KQ = np.exp(-(distTable)) * 2
+        #KQ = np.zeros(distTable.shape)
+    if(Type == 'syn_noedge'):
+        distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
+                                           np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
+        for i in range(NofEdges1):
+            for j in range(G2.Edges.shape[0]):
+                distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
+                distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
+        KQ = np.exp(-(distTable)) * 2
+        KQ = np.zeros(distTable.shape)
     return KQ
 
 def ComputeKT(G1,G2):
@@ -423,6 +465,7 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
         G.AddAuctionFactor()
         return G
 
+
     for ti in range(KT.shape[0]):
     #for ti in range(0):
         CTripletsVec = VecInt(3)
@@ -431,10 +474,14 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
         CTripletsVec[2] = int(G1.Triplets[ti][2])
         CurrentNNZV = doubleArray(KT.shape[1])
         for xijk in range(KT.shape[1]):
+<<<<<<< HEAD
             if(Type == 'pas'):
                 CurrentNNZV[xijk] = 0.32 * KT[ti][xijk]
             else:
                 CurrentNNZV[xijk] = KT[ti][xijk]
+=======
+            CurrentNNZV[xijk] = KT[ti][xijk]
+>>>>>>> 333aa2aba1fa9e5c7af1887b32e41927bc01833e
         G.AddGenericGenericSparseFactor(CTripletsVec, nnzTripIdx, CurrentNNZV)
 
     G.AddAuctionFactor()

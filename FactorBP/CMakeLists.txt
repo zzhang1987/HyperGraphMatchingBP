@@ -1,5 +1,5 @@
 Project(HyperGMBP)
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.4)
 
 
 macro(ADD_USER_FRAMEWORK fwname appname)
@@ -29,7 +29,6 @@ SET(LIBSRCS Auction.cpp
 	    Factor.cpp
 	    FactorGraph.cpp
 	    SubTourFactor.cpp
-	    Tools.cpp
 	    Auction.h
 	    FactorCreator.h
 	    FactorStore.h
@@ -39,7 +38,7 @@ SET(LIBSRCS Auction.cpp
 	    Factor.h
 	    FactorGraphStore.h
 	    SubTourFactor.h
-	    Tools.h)
+	    )
 
 set (HEADERS  Auction.h
 	    FactorCreator.h

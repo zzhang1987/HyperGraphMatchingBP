@@ -58,6 +58,9 @@ namespace zzhang{
 	   * Node beliefs
 	   */
 	  Real**  m_bi;
+      
+         std::vector< std::mutex > m_NodeMutexes;
+         
 	  /**
 	   * Node Factors are stored sepratedly to other factors.
 	   */
@@ -173,6 +176,8 @@ namespace zzhang{
 		    
 	       }
 	  }
+         
+         static bool UpdateMessages(std::vector<FactorBase *>& Factors, std::mutex )
 	  /**
 	   * Update messages
 	   */
@@ -251,9 +256,13 @@ namespace zzhang{
 	  double DualValue(){return Dual;}
 	  double PrimalValue(){return BestDecodeV;}
 
+<<<<<<< HEAD
 	  int ResetPrimal(){
 	       BestDecodeV = -1e20;
 	  }
+=======
+	
+>>>>>>> 333aa2aba1fa9e5c7af1887b32e41927bc01833e
 	  
 	  MostFractionalNodes FindMostFracNodes()
 	  {
