@@ -93,9 +93,13 @@ namespace zzhang{
 	  std::vector<int> Evid;
 
 	  std::vector< std::pair<int, double> > m_PrimalDualGap;
-	  
+	  bool m_WithLocalAssign;
      public:
 
+	  void SetWithLocalAssign(bool WithLocalAssign){
+	       m_WithLocalAssign = WithLocalAssign;
+	  }
+	  
 	  void SetVerbose(bool verbose){
 	       m_verbose = verbose;
 	  }

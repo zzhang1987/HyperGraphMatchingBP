@@ -3,6 +3,7 @@ import numpy as np
 from FactorBP.FactorGraph import *
 from sklearn.neighbors import KDTree
 import scipy.io as sio
+import tempfile as tmp
 def rand_rotation_matrix(deflection=1.0, randnums=None):
     """
     Creates a random rotation matrix.
@@ -483,7 +484,7 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
         G.AddGenericGenericSparseFactor(CTripletsVec, nnzTripIdx, CurrentNNZV)
 
     G.AddAuctionFactor()
-
+    TmpFName = tmp.mktemp(suffix='.mat')
     MatRes = {}
     MatRes['Triplets'] = G1.Triplets
     MatRes['NTriplets'] = G2.PermunatedTriplets
@@ -493,9 +494,9 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
     MatRes['KQ'] = KQ
     MatRes['KP'] = KP
     MatRes['GT'] = range(NofNodes)
-    sio.savemat('Temp.mat', MatRes)
+    sio.savemat(TmpFName, MatRes)
 
-    return G;
+    return G, TmpFName;
 
 
 

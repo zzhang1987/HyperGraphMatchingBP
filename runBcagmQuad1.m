@@ -1,5 +1,5 @@
-function [tend, id, res] = runBcagmQuad1(mode)
-load('Temp.mat');
+function [tend, id, res] = runBcagmQuad1(Fname,mode)
+load(Fname);
 
 NofNodes = prod(size(GT));
 

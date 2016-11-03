@@ -2,7 +2,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np;
 
-def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers):
+def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers, StoreFileName):
     h1 = I1.shape[0]
     w1 = I1.shape[1]
     
@@ -10,7 +10,7 @@ def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers):
     w2 = I2.shape[1]
     
     fig = plt.figure(1)
-    
+    fig.clf()
     h = max(h1, h2)
     
     diff1 = h - h1
@@ -45,9 +45,9 @@ def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers):
     plt.plot(Pt2[:,1] + w1, Pt2[:,0] + d21, 'ro' )
 
     for i in range(matches.shape[0]):
-        if(matches[i] == gTruth[i] and i < NofInliers):
+        if(matches[i] == gTruth[i] and gTruth[i] < NofInliers):
             plt.plot([Pt1[i,1], Pt2[matches[i],1] + w1], [Pt1[i,0] + d11, Pt2[matches[i],0] + d21], 'g')
-        elif(i > NofInliers):
+        elif(gTruth[i] < NofInliers):
             plt.plot([Pt1[i, 1], Pt2[matches[i], 1] + w1], [Pt1[i, 0] + d11, Pt2[matches[i], 0] + d21], 'y')
         else:
             plt.plot([Pt1[i, 1], Pt2[matches[i], 1] + w1], [Pt1[i, 0] + d11, Pt2[matches[i], 0] + d21], 'k')
@@ -57,7 +57,9 @@ def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers):
     plt.xlim([ 0, w1+w2])
     plt.ylim([ h, 0])
     plt.draw()
-    return I
+    plt.savefig(StoreFileName)
+    plt.show()
+
 
 def drawMatches(I1, I2, Pt1, Pt2, G1, G2, matches, IsCorrect):
     matplotlib.use('AGG')
@@ -68,7 +70,7 @@ def drawMatches(I1, I2, Pt1, Pt2, G1, G2, matches, IsCorrect):
     w2 = I2.shape[1]
 
     fig = plt.figure(1)
-
+    
     h = max(h1, h2)
 
     diff1 = h - h1

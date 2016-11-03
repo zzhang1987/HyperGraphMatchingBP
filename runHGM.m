@@ -1,7 +1,5 @@
-function [tend, id, res] = runHGM()
-
-load('Temp.mat');
-
+function [tend, id, res] = runHGM(MFname)
+load(MFname);
 NofNodes = prod(size(GT));
 
 NT1 = size(Triplets,1);

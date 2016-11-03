@@ -1,5 +1,5 @@
-function [tend, id, res] = runTensorMatching()
-load('Temp.mat');
+function [tend, id, res] = runTensorMatching(MFname)
+load(MFname);
 
 NofNodes = prod(size(GT));
 

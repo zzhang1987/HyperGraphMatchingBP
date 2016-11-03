@@ -1,5 +1,5 @@
-function [tend, id, res] = runRRWHM()
-load('Temp.mat');
+function [tend, id, res] = runRRWHM(MFname)
+load(MFname);
 
 NofNodes = prod(size(GT));
 

@@ -24,6 +24,7 @@ zzhang::CFactorGraph::CFactorGraph(int NofNodes, int *NofStates)
 {
      
      assert(NofNodes > 0);
+     m_WithLocalAssign = true;
      m_NofNodes = NofNodes;
      m_NofStates = new int[NofNodes];
      memcpy(m_NofStates, NofStates, sizeof(int) * NofNodes);
