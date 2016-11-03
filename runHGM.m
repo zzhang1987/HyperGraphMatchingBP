@@ -36,12 +36,6 @@ t4 = (t1 == 0) + (t2 == 0) + (t3 == 0);
 indH3 = indH3(t4 == 0, :);
 valH3 = valH3(t4 == 0);
 % upperbound the number of nonzeros
-maxL = min(5*10^6, length(valH3));
-[v id] = sort(valH3, 'descend');
-% id = randperm(length(valH3));
-id = id(1:maxL);
-valH3 = valH3(id);
-indH3 = indH3(id, :);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

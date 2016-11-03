@@ -498,7 +498,61 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
 
     return G, TmpFName;
 
+def array_hash(d):
+    """ dict => string hash """
+    return '{' + ','.join(sorted(str(k) +':'+ str(d[k]) for k in range(len(d)))) + '}'
 
+
+#~
+# Constructing the higher order graphical model for super nodes produced by local modes search procedure.
+#~
+def ConstructSuperGraph(NofNodes, SPNodes, LargePositiveNumber = 50):
+    NofStates = intArray(NofNodes)
+    NofFactors = 0;
+    
+    for i in range(NofNodes):
+        NofStates[i] = NofNodes
+    G = CFactorGraph(NofNodes, NofStates)
+
+    IsAdded = dict()
+    for (idx, SPNode) in SPNodes.iteritems():
+        AllEntries = [e for e in SPNode.iterkeys()]
+        e1 = eval(AllEntries[0]);
+        clu = [n for n in e1.iterkeys()]
+        t = sorted(clu)
+        if len(clu) != len(t):
+            print("Error! Wrong format for super nodes! A node appears multiple times.")
+            print("The super node is")
+            print(clu)
+        #if (array_hash(t) in IsAdded):
+        #    print("The super node is already added! Skipping it.")
+        #    continue
+        #else:
+        #    IsAdded[array_hash(t)] = 1
+
+        if(len(clu) > 1):
+            CluSize = len(clu)
+            CluVec = VecInt(CluSize)
+            for i in range(CluSize):
+                CluVec[i] = clu[i]
+            NNZs = len(AllEntries)
+            NNZVArray = [-v for v in SPNode.itervalues()]
+            print (NNZVArray)
+            NNZv = doubleArray(NNZs)
+            NNZIdxVec = VecVecInt(NNZs)
+            for xijk in range(len(AllEntries)):
+                cAssignVec = VecInt(CluSize)
+                cAssignDict = eval(AllEntries[xijk])
+                cAssignArray = [xi for xi in cAssignDict.itervalues()]
+                for xi in range(len(cAssignArray)):
+                    cAssignVec[xi] = cAssignArray[xi]
+                NNZv[xijk] = NNZVArray[xijk] + LargePositiveNumber
+                NNZIdxVec[xijk] = cAssignVec
+            G.AddGenericGenericSparseFactor(CluVec, NNZIdxVec, NNZv)
+            NofFactors += 1
+    G.AddAuctionFactor()
+    return G, NofFactors
+            
 
 class MatchingGraph:
     def __init__(self, P, PFeature):

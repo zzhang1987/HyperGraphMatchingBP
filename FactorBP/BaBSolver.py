@@ -73,7 +73,9 @@ class BaBNode:
         return False
 
     def __gt__(self, other):
-        if (self.UB <= other.UB):
+        if (self.UB < other.UB):
+            return True
+        elif ((self.UB == other.UB) & (self.Gap >= other.Gap)):
             return True
         return False
 
@@ -84,8 +86,15 @@ class BaBRes:
         self.Decode = decode
         self.Time = time
 
-def BaBSolver(G,outIter, inIter, maxGap, verbose):
+def BaBSolver(G,outIter, inIter, maxGap, verbose, InitLB = -1e20):
     start_time = time.time()
+    G.Solve(1)
+    GUB = G.DualValue();
+    xhat = None
+    if(GUB < InitLB):
+        time_dur = time.time() - start_time
+        return BaBRes(InitLB, None, time.time() - start_time)
+
     G.Solve(400)
     time_dur = None
     #G.Solve(20)
@@ -93,7 +102,7 @@ def BaBSolver(G,outIter, inIter, maxGap, verbose):
     iter = 1
     #xhat = G.GetDecode()
     GUB = 1e20;#G.DualValue()
-    GLB = -1e20#G.PrimalValue()
+    GLB = InitLB#G.PrimalValue()
     root = BaBNode(None,GUB,GLB,None,None,None)
 
     Q.insert(root)
@@ -117,10 +126,7 @@ def BaBSolver(G,outIter, inIter, maxGap, verbose):
         if(cNode.DualStore != None):
             G.ReStoreDual(cNode.DualStore)
         if(cNode.Node != None):
-            G.SetDecode(cNode.Node, cNode.AssignMent)
-
-
-
+            IsSucced = G.SetDecode(cNode.Node, cNode.AssignMent)
         GUB = cNode.UB
         G.Solve(inIter)
         LB = G.PrimalValue()

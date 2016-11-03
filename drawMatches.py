@@ -21,7 +21,10 @@ def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers, StoreF
     
     d21 = int(diff2 * 0.5)
     d22 = diff2 - d21
-    
+    ax1 = plt.axes(frameon=False)
+
+    ax1.axes.get_yaxis().set_visible(False)
+    ax1.axes.get_xaxis().set_visible(False)
     I = np.zeros([h, w1+w2, 3], dtype=np.uint8);
     if len(I1.shape) == 2 or I1.shape[2] == 1:
         for j in range(3):
@@ -38,6 +41,8 @@ def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers, StoreF
         I[d21:(h2 + d21), (w1):(w1+w2)] = I2[0:h2, 0:w2]
     
     plt.imshow(I)
+
+
 
     plt.plot([w1, w1], [0, h], color='#eeefff', linewidth=2.0)
 
