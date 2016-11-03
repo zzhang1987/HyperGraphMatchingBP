@@ -25,14 +25,14 @@ def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers, StoreF
     I = np.zeros([h, w1+w2, 3], dtype=np.uint8);
     if len(I1.shape) == 2 or I1.shape[2] == 1:
         for j in range(3):
-            print('Here')
+            #print('Here')
             I[d11:(h1 + d11), 0:w1, j] = I1
     else:
         I[d11:(h1 + d11), 0:w1] = I1[0:h1, 0:w1]
 
     if len(I2.shape) == 2 or I2.shape[2] == 1:
         for j in range(3):
-            print('Here')
+            #print('Here')
             I[d21:(h2 + d21), (w1):(w1 + w2), j] = I2
     else:
         I[d21:(h2 + d21), (w1):(w1+w2)] = I2[0:h2, 0:w2]
@@ -46,11 +46,11 @@ def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers, StoreF
 
     for i in range(matches.shape[0]):
         if(matches[i] == gTruth[i] and gTruth[i] < NofInliers):
-            plt.plot([Pt1[i,1], Pt2[matches[i],1] + w1], [Pt1[i,0] + d11, Pt2[matches[i],0] + d21], 'g')
-        elif(gTruth[i] < NofInliers):
+            plt.plot([Pt1[i,1], Pt2[matches[i],1] + w1], [Pt1[i,0] + d11, Pt2[matches[i],0] + d21], 'g')  
+        elif((gTruth[i] == -1 and matches[i] not in gTruth) or (gTruth[i] >= NofInliers and matches[i] >= NofInliers)):
             plt.plot([Pt1[i, 1], Pt2[matches[i], 1] + w1], [Pt1[i, 0] + d11, Pt2[matches[i], 0] + d21], 'y')
         else:
-            plt.plot([Pt1[i, 1], Pt2[matches[i], 1] + w1], [Pt1[i, 0] + d11, Pt2[matches[i], 0] + d21], 'k')
+            plt.plot([Pt1[i, 1], Pt2[matches[i], 1] + w1], [Pt1[i, 0] + d11, Pt2[matches[i], 0] + d21], 'm')
         
             
 
