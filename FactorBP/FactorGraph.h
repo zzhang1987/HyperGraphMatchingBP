@@ -183,9 +183,12 @@ namespace zzhang{
 	   * For debug in python;
 	   */
 	  std::vector<Real> GetBelief(int Nid);
-
+	  /**
+	   *
+	   */
 	  double ComputeObj(int* decode){
 	       //assert(decode.size() == m_NofNodes);
+	       //assert(len == m_NofNodes);
 	       Real res = 0.0;
 	       for(int i = 0; i < m_NofNodes; i++)
 	       {

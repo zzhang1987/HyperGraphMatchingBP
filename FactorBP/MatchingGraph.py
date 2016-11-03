@@ -389,13 +389,16 @@ def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
 
     return G
 
-
-
-def ConstructMatchingModel(G1, G2, Type, AddTriplet):
+def ComputeSimilarity(G1, G2, Type):
     KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature)
     KQ = ComputeKQ(G1, G2, Type)
     KT = ComputeKT(G1, G2)
     KP = np.exp(-(KP))
+    return KP,KQ,KT
+
+
+def ConstructMatchingModel(G1, G2, Type, AddTriplet):
+    KP,KQ,KT = ComputeSimilarity(G1,G2,Type)
     NofNodes = G1.NofNodes
     NofStates = intArray(NofNodes)
     for i in range(NofNodes):
