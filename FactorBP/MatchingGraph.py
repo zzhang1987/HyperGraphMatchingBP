@@ -397,8 +397,8 @@ def ComputeSimilarity(G1, G2, Type):
     KP = np.exp(-(KP))
     return KP,KQ,KT
 
-
-def ConstructMatchingModel(G1, G2, Type, AddTriplet):
+# Modifyed by Lee at 12:34PM 4th November
+def ConstructMatchingModel(G1, G2, Type, AddTriplet, AddEdge):
     KP,KQ,KT = ComputeSimilarity(G1,G2,Type)
     NofNodes = G1.NofNodes
     NofStates = intArray(NofNodes)
@@ -410,7 +410,9 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
         for xi in range(NofNodes):
             bi[xi] = float(KP[ni][xi])
         G.AddNodeBelief(ni, bi)
+    # NNZEdge & NNZTrip?
     nnzEdgeIdx = VecVecInt(KQ.shape[1])
+    
     for ni in range(G2.Edges.shape[0]):
         CurrentAssign = VecInt(2)
         CurrentAssign[0] = int(G2.Edges[ni][0])
@@ -428,75 +430,79 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet):
         CurrentAssign[1] = int(G2.PermunatedTriplets[ni][1])
         CurrentAssign[2] = int(G2.PermunatedTriplets[ni][2])
         nnzTripIdx[ni] = CurrentAssign
-
-
-    NNZs = KQ.shape[1]
-    nnzIdx = intArray(2 * NNZs)
-    for j in range(G2.Edges.shape[0]):
-        xi = G2.Edges[j][0]
-        xj = G2.Edges[j][1]
-        nnzIdx[2 * j] = int(xi)
-        nnzIdx[2 * j + 1] = int(xj)
-    baseIdx = 2 * G2.Edges.shape[0]
-    for j in range(G2.Edges.shape[0]):
-        xi = G2.Edges[j][1]
-        xj = G2.Edges[j][0]
-        nnzIdx[baseIdx + 2 * j] = int(xi)
-        nnzIdx[baseIdx + 2 * j + 1] = int(xj)
+    # Save Matching Model as Temp.mat
+    MatRes = {}
+    TmpFName = tmp.mktemp(suffix='.mat')
+    if AddTriplet:
+        MatRes['Triplets'] = G1.Triplets
+        MatRes['NTriplets'] = G2.PermunatedTriplets
+        MatRes['Similarity'] = KT
+    if AddEdge:
+        MatRes['P1'] = G1.P
+        MatRes['P2'] = G2.P
+        MatRes['Edges'] = G1.Edges
+        MatRes['NEdges'] = G2.Edges
+        MatRes['KQ'] = KQ
+    MatRes['KP'] = KP
+    MatRes['GT'] = range(NofNodes)    
+    sio.savemat(TmpFName, MatRes)
     
-    mi = doubleArray(NofNodes);
-    mj = doubleArray(NofNodes);
-    for i in range(NofNodes):
-        mi[i] = 0
-        mj[i] = 0
-    for ei in range(KQ.shape[0]):
-        EPotentials = doubleArray(NofNodes * NofNodes)
-        for xij in range(NofNodes * NofNodes):
-            EPotentials[xij] = 0;
-        cei = G1.Edges[ei][0]
-        cej = G1.Edges[ei][1]
-        CEdgeVec = VecInt(2)
-        CEdgeVec[0] = int(G1.Edges[ei][0])
-        CEdgeVec[1] = int(G1.Edges[ei][1])
-        CurrentNNZV = doubleArray(KQ.shape[1])
-        for xij in range(KQ.shape[1]):
-            rxij = int(nnzIdx[2 * xij] * NofNodes + nnzIdx[2 * xij + 1])
-            EPotentials[rxij] = KQ[ei][xij]
-            CurrentNNZV[xij] = KQ[ei][xij]
-        #G.AddGenericGenericSparseFactor(CEdgeVec, nnzEdgeIdx, CurrentNNZV)
-        G.AddSparseEdgeNZ(cei, cej, EPotentials, mi, mj, NNZs, nnzIdx)
 
+    # Edges
+    if AddEdge:
+        NNZs = KQ.shape[1]
+        nnzIdx = intArray(2 * NNZs)
+        for j in range(G2.Edges.shape[0]):
+            xi = G2.Edges[j][0]
+            xj = G2.Edges[j][1]
+            nnzIdx[2 * j] = int(xi)
+            nnzIdx[2 * j + 1] = int(xj)
+        baseIdx = 2 * G2.Edges.shape[0]
+        for j in range(G2.Edges.shape[0]):
+            xi = G2.Edges[j][1]
+            xj = G2.Edges[j][0]
+            nnzIdx[baseIdx + 2 * j] = int(xi)
+            nnzIdx[baseIdx + 2 * j + 1] = int(xj)
 
-    if(AddTriplet == False):
-        G.AddAuctionFactor()
-        return G
+        mi = doubleArray(NofNodes);
+        mj = doubleArray(NofNodes);
+        for i in range(NofNodes):
+            mi[i] = 0
+            mj[i] = 0
+        for ei in range(KQ.shape[0]):
+            EPotentials = doubleArray(NofNodes * NofNodes)
+            for xij in range(NofNodes * NofNodes):
+                EPotentials[xij] = 0;
+            cei = G1.Edges[ei][0]
+            cej = G1.Edges[ei][1]
+            CEdgeVec = VecInt(2)
+            CEdgeVec[0] = int(G1.Edges[ei][0])
+            CEdgeVec[1] = int(G1.Edges[ei][1])
+            CurrentNNZV = doubleArray(KQ.shape[1])
+            for xij in range(KQ.shape[1]):
+                rxij = int(nnzIdx[2 * xij] * NofNodes + nnzIdx[2 * xij + 1])
+                EPotentials[rxij] = KQ[ei][xij]
+                CurrentNNZV[xij] = KQ[ei][xij]
+            #G.AddGenericGenericSparseFactor(CEdgeVec, nnzEdgeIdx, CurrentNNZV)
+            G.AddSparseEdgeNZ(cei, cej, EPotentials, mi, mj, NNZs, nnzIdx)
 
-
-    for ti in range(KT.shape[0]):
-    #for ti in range(0):
-        CTripletsVec = VecInt(3)
-        CTripletsVec[0] = int(G1.Triplets[ti][0])
-        CTripletsVec[1] = int(G1.Triplets[ti][1])
-        CTripletsVec[2] = int(G1.Triplets[ti][2])
-        CurrentNNZV = doubleArray(KT.shape[1])
-        for xijk in range(KT.shape[1]):
-            CurrentNNZV[xijk] = KT[ti][xijk]
-        G.AddGenericGenericSparseFactor(CTripletsVec, nnzTripIdx, CurrentNNZV)
+    # Triplet
+    if AddTriplet:
+        for ti in range(KT.shape[0]):
+        #for ti in range(0):
+            CTripletsVec = VecInt(3)
+            CTripletsVec[0] = int(G1.Triplets[ti][0])
+            CTripletsVec[1] = int(G1.Triplets[ti][1])
+            CTripletsVec[2] = int(G1.Triplets[ti][2])
+            CurrentNNZV = doubleArray(KT.shape[1])
+            for xijk in range(KT.shape[1]):
+                CurrentNNZV[xijk] = KT[ti][xijk]
+            G.AddGenericGenericSparseFactor(CTripletsVec, nnzTripIdx, CurrentNNZV)
 
     G.AddAuctionFactor()
-    TmpFName = tmp.mktemp(suffix='.mat')
-    MatRes = {}
-    MatRes['Triplets'] = G1.Triplets
-    MatRes['NTriplets'] = G2.PermunatedTriplets
-    MatRes['Similarity'] = KT
-    MatRes['Edges'] = G1.Edges
-    MatRes['NEdges'] = G2.Edges
-    MatRes['KQ'] = KQ
-    MatRes['KP'] = KP
-    MatRes['GT'] = range(NofNodes)
-    sio.savemat(TmpFName, MatRes)
-
+    
     return G, TmpFName;
+
 
 def array_hash(d):
     """ dict => string hash """
@@ -552,7 +558,6 @@ def ConstructSuperGraph(NofNodes, SPNodes, LargePositiveNumber = 50):
             NofFactors += 1
     G.AddAuctionFactor()
     return G, NofFactors
-            
 
 class MatchingGraph:
     def __init__(self, P, PFeature):
@@ -601,4 +606,3 @@ class MatchingGraph:
         tri1 = Delaunay(self.P)
         self.Triplets = tri1.simplices
         self.PermunatedTriplets = PermunateTriplets(self.Triplets)
-        
