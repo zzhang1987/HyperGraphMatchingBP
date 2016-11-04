@@ -34,13 +34,40 @@ namespace std{
 %newobject zzhang::CFactorGraph::StoreDual;
 
 %apply (double * IN_ARRAY1, int DIM1) {(double* seq, int n)};
-%apply (int * IN_ARRAY1) {(int* seq)};
+
+
 %typemap(out) std::vector<int>{
      int length = $1.size();
      $result = PyArray_FromDims(1, &length, NPY_INT);
      memcpy(PyArray_DATA((PyArrayObject *) $result),&((*(&$1))[0]),sizeof(int)*length);
  }
 
+%typemap(in) (int *decode) {
+     if (PyList_Check($input)) {
+	  int size = PyList_Size($input);
+	  Py_ssize_t i = 0;
+	  $1 = (int *)malloc((size) * sizeof(int));
+	  for(int i = 0; i < size; i++)
+	  {
+	       PyObject *s = PyList_GetItem($input,i);
+	       if (!PyInt_Check(s)) {
+		    free($1);
+		    PyErr_SetString(PyExc_ValueError, "List items must be integers");
+		    return NULL;
+	       }
+	       $1[i] = PyInt_AsLong(s);
+	  }
+     }
+     else{
+	  PyErr_SetString(PyExc_ValueError, "Expecting a list");
+	  return NULL;
+     }
+     
+ }
+
+%typemap(freearg) (int *decode){
+     if($1) free($1);
+}
 
 
 %include "BaBTypes.h"

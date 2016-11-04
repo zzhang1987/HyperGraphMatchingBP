@@ -187,28 +187,11 @@ namespace zzhang{
 	   * For debug in python;
 	   */
 	  std::vector<Real> GetBelief(int Nid);
-	  /**
-	   *
-	   */
-	  double ComputeObj(int* decode){
-	       //assert(decode.size() == m_NofNodes);
-	       //assert(len == m_NofNodes);
-	       Real res = 0.0;
-	       for(int i = 0; i < m_NofNodes; i++)
-	       {
-		    res += m_bi[i][decode[i]];
-		    if(auFactor)
-		    {
-			 res += auFactor->prices[decode[i]];
-		    }
-	       }
-
-	       for(int i = 0; i < m_Factors.size(); i++)
-	       {
-		    res += m_Factors[i]->Primal(&decode[0]);
-	       }
-	       return res;
+	  double ComputePrimal(int *decode, int n){
+	       assert(n == m_NofNodes);
+	       return ComputeObj(decode);
 	  }
+
 
 	  std::vector<int> GetDecode()
 	  {
@@ -302,6 +285,29 @@ namespace zzhang{
      public:
 	  FactorGraphDualStore *StoreDual();
 	  bool ReStoreDual(FactorGraphDualStore *store);
+     public:
+	  /**
+	   *
+	   */
+	  double ComputeObj(int* decode){
+	       //assert(decode.size() == m_NofNodes);
+	       //assert(len == m_NofNodes);
+	       Real res = 0.0;
+	       for(int i = 0; i < m_NofNodes; i++)
+	       {
+		    res += m_bi[i][decode[i]];
+		    if(auFactor)
+		    {
+			 res += auFactor->prices[decode[i]];
+		    }
+	       }
+
+	       for(int i = 0; i < m_Factors.size(); i++)
+	       {
+		    res += m_Factors[i]->Primal(&decode[0]);
+	       }
+	       return res;
+	  }
      };
 }
 
