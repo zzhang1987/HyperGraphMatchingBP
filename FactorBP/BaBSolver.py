@@ -85,8 +85,14 @@ class BaBRes:
         self.Value = value
         self.Decode = decode
         self.Time = time
+def ComputeConstraintValue(NofNodes, decode, Phi):
+    res = 0;
+    for i in range(NofNodes):
+        res -= Phi[i][decode[i]]
+    return res
 
-def BaBSolver(G,outIter, inIter, maxGap, verbose, InitLB = -1e20):
+        
+def BaBSolver(G,outIter, inIter, maxGap, verbose, InitLB = -1e20, Phi=None):
     start_time = time.time()
     G.Solve(1)
     GUB = G.DualValue();

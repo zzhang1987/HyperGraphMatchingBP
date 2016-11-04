@@ -17,6 +17,7 @@
 import numpy as np
 import FactorGraph as FG
 import BaBSolver as BSolver
+from scipy.spatial.distance import hamming
 
 def AdditionOfPhi(NofNodes, gamma, Phi, G):
     bi = FG.doubleArray(NofNodes)
@@ -43,7 +44,7 @@ def SolveConstrainedMatching(NofNodes, G, gamma0, Phi, bestv, X0,  eps=1e-6):
         #print("")
         DualStore = G.StoreDual()
         G.ResetMax()
-        res = BSolver.BaBSolver(G,2000,5,0.005,True,-1e20)
+        res = BSolver.BaBSolver(G,100,50,0.0005,True,-1e20)
         G.ReStoreDual(DualStore)
         cpv = res.Value
         fpv = ComputeConstraintValue(NofNodes, G.GetDecode(), Phi)
@@ -73,7 +74,7 @@ def SolveConstrainedMatching(NofNodes, G, gamma0, Phi, bestv, X0,  eps=1e-6):
         G.ResetMax()
         DualStore = G.StoreDual()
         G.ResetMax()
-        res = BSolver.BaBSolver(G, 2000, 5, 0.005, True, -1e20)
+        res = BSolver.BaBSolver(G, 2000, 5, 0.0005, True, -1e20)
         G.ReStoreDual(DualStore)
         cpv = res.Value
         fpv = ComputeConstraintValue(NofNodes, G.GetDecode(), Phi, )
@@ -92,7 +93,6 @@ def SolveConstrainedMatching(NofNodes, G, gamma0, Phi, bestv, X0,  eps=1e-6):
                 bestv = cv
                 X = CX
                 return X;
-
     return X
 
                 
@@ -113,12 +113,22 @@ def FindNearSol(NofNodes, G, X, delta, MaxIter=1000):
     Phi -= delta*1.0 / NofNodes
     Xarray = FG.intArray(NofNodes)
     for i in range(NofNodes):
-        Xarray[i] = X[i]
+        Xarray[i] = int(X[i])
 
     cbestv = G.ComputeObj(Xarray)
 
     return SolveConstrainedMatching(NofNodes,G,gamma0,Phi, cbestv, X)
 
-    
+
+def FindModes(NofNodes, G, X0, delta, MaxIter = 1000):
+    X1 = None
+    for iter in range(MaxIter):
+        X1 = FindNearSol(NofNodes, G, X0, delta)
+        if(X1 is None):
+            return X0
+        if(hamming(X1,X0) == 0):
+            return X1
+        X0 = X1
+    return X1
     
     

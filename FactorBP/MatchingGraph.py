@@ -1,6 +1,6 @@
 from scipy.spatial import Delaunay
 import numpy as np
-from FactorBP.FactorGraph import *
+from FactorGraph import CFactorGraph, intArray, doubleArray, VecInt, VecVecInt
 from sklearn.neighbors import KDTree
 import scipy.io as sio
 import tempfile as tmp
@@ -52,9 +52,7 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     MaxSize = 100
     PT1 = np.random.rand(NofInliers, 3) * MaxSize
     PT1[:,2] /= 50
-    
-    Ou1 = np.random.rand(NofOutliers, 2) * MaxSize
-    Ou2 = np.random.rand(NofOutliers, 2) * MaxSize
+
     #PT1Homo = np.append(PT1, np.ones([NofInliers, 1]), axis = 1)
 
     PT1Homo = PT1.transpose()
@@ -177,19 +175,29 @@ def computeTripletsFeatureSimple(Points, T):
         F = -10 * np.ones(3)
         return F
     for idx in range(3):
-        vecX[idx] = Points[T[(idx + 1)%3]][0] - Points[T[idx]][0]
-        vecY[idx] = Points[T[(idx + 1)%3]][1] - Points[T[idx]][1]
-        length = np.linalg.norm([vecX[idx], vecY[idx]])
-        if(length != 0):
-            vecX[idx] /= length
-            vecY[idx] /= length
-        else:
-            vecX[idx] = 0
-            vecY[idx] = 0
+        P1 = Points[T[(idx + 1)%3]] -  Points[T[idx]]
+        P2 = Points[T[(idx + 2)%3]] - Points[T[idx]]
+        l1 = np.linalg.norm(P1)
+        l2 = np.linalg.norm(P2)
+
+        if(l1 != 0):
+            P1 /= l1
+        if(l2 != 0):
+            P2 /= l2
+
+        F[idx] = np.arccos(P1[0] * P2[0] + P1[1] * P2[1])
+        
+        #length = np.linalg.norm([vecX[idx], vecY[idx]])
+        #if(length != 0):
+        #    vecX[idx] /= length
+        #    vecY[idx] /= length
+        #else:
+        #    vecX[idx] = 0
+        #    vecY[idx] = 0
             
             
-    for idx in range(3):
-        F[idx] = np.arctan2(vecX[idx], vecY[idx])
+    #for idx in range(3):
+        #F[idx] = np.arctan2(vecX[idx], vecY[idx])
         
     return F
 def computeEdgeFeatureSimple(Points, E1, E2):
@@ -198,7 +206,7 @@ def computeEdgeFeatureSimple(Points, E1, E2):
     F[0] = np.linalg.norm(Vec)
     F[2] = F[0]
     F[1] = np.arctan2(Vec[0], Vec[1])
-    F[3] = np.arctan2(-Vec[0], Vec[1])
+    F[3] = np.arctan2(-Vec[0], -Vec[1])
     return F
 
 
@@ -234,6 +242,16 @@ def ComputeKQ(G1, G2, Type):
     NofEdges1 = G1.Edges.shape[0]
     NofEdges2 = G2.Edges.shape[0] * 2
     KQ = np.zeros([NofEdges1, NofEdges2])
+    if(Type == 'pasDis'):
+        distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
+                                           np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
+        for i in range(NofEdges1):
+            for j in range(G2.Edges.shape[0]):
+                distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
+                distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
+        agdistTable = ComputeAngleDistance(G1.EdgeFeature[:, 1], np.append(G2.EdgeFeature[:,1], G2.EdgeFeature[:,3]))
+
+        KQ = np.exp(-(distTable + agdistTable)/2) * 2
     if(Type == 'pas'):
         distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
                                            np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
@@ -393,12 +411,12 @@ def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
 def ComputeSimilarity(G1, G2, Type):
     KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature)
     KQ = ComputeKQ(G1, G2, Type)
-    KT = ComputeKT(G1, G2)
+    KT = 0.5 * ComputeKT(G1, G2)
     KP = np.exp(-(KP))
     return KP,KQ,KT
 
 # Modifyed by Lee at 12:34PM 4th November
-def ConstructMatchingModel(G1, G2, Type, AddTriplet, AddEdge = True):
+def ConstructMatchingModel(G1, G2, Type, AddTriplet = True, AddEdge = True):
     KP,KQ,KT = ComputeSimilarity(G1,G2,Type)
     NofNodes = G1.NofNodes
     NofStates = intArray(NofNodes)
@@ -520,7 +538,6 @@ def ConstructSuperGraph(NofNodes, SPNodes, LargePositiveNumber = 50):
         NofStates[i] = NofNodes
     G = CFactorGraph(NofNodes, NofStates)
 
-    IsAdded = dict()
     for (idx, SPNode) in SPNodes.iteritems():
         AllEntries = [e for e in SPNode.iterkeys()]
         e1 = eval(AllEntries[0]);
