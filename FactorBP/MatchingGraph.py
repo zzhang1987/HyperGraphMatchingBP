@@ -398,7 +398,7 @@ def ComputeSimilarity(G1, G2, Type):
     return KP,KQ,KT
 
 # Modifyed by Lee at 12:34PM 4th November
-def ConstructMatchingModel(G1, G2, Type, AddTriplet, AddEdge):
+def ConstructMatchingModel(G1, G2, Type, AddTriplet, AddEdge = True):
     KP,KQ,KT = ComputeSimilarity(G1,G2,Type)
     NofNodes = G1.NofNodes
     NofStates = intArray(NofNodes)
