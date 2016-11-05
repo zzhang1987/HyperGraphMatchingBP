@@ -56,7 +56,7 @@ namespace zzhang{
 	   */
 	  Real**  m_bi;
       
-         std::vector< std::mutex > m_NodeMutexes;
+	  std::vector< std::mutex > m_NodeMutexes;
          
 	  /**
 	   * Node Factors are stored sepratedly to other factors.
@@ -73,10 +73,12 @@ namespace zzhang{
 	   * Best Decode
 	   */
 	  int *m_BestDecode;
+	  
 	  /**
 	   * Current Best Primal
 	   */
 	  Real BestDecodeV;
+	  Real m_CurrentPrimal;
 	  /**
 	   * Special Factor, Auction Factor
 	   */
@@ -118,6 +120,7 @@ namespace zzhang{
 	       SubTourFactor *subTour = new SubTourFactor(N, Nodes, m_NofStates, AssignMents, m_bi, m_NodeFactors);
 	       m_Factors.push_back(subTour);
 	  }
+
 	  
 	  
 	  virtual ~CFactorGraph(){
@@ -149,9 +152,9 @@ namespace zzhang{
 	  bool AddEdge(int ei, int ej, double *data);
 	  bool AddSparseEdge(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
 	  bool AddSparseEdgeNZ(int ei, int ej, double *data, double *mi, double *mj, int nnz, int *nnzIdx);
-         bool AddGenericGenericSparseFactor(const std::vector<int>& Nodes,
-                                            const std::vector< std::vector<int> >& NNZs,
-                                            double * NNZv);
+	  bool AddGenericGenericSparseFactor(const std::vector<int>& Nodes,
+					     const std::vector< std::vector<int> >& NNZs,
+					     double * NNZv);
 	  bool m_verbose;
 	  double MinDualDecrease;
 	  void SetMinDualDecrease(double EPS){
@@ -182,6 +185,9 @@ namespace zzhang{
 	   * Update messages
 	   */
 	  void UpdateMessages();
+
+
+	  void RunAuction();
 	  
 	  /**
 	   * For debug in python;
@@ -197,6 +203,13 @@ namespace zzhang{
 	  {
 	       return std::vector<int>(m_BestDecode,
 				       m_BestDecode + m_NofNodes);
+	  }
+	  std::vector<int> GetCurrentDecode(){
+	       return std::vector<int>(m_CurrentDecode,
+				       m_CurrentDecode + m_NofNodes);
+	  }
+	  double CurrentPrimal(){
+	       return m_CurrentPrimal;
 	  }
 	  void PrintFactorInfo(){
 	       for(int i = 0; i < m_NofNodes; i++)

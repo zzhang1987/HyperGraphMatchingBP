@@ -32,29 +32,88 @@ def ComputeConstraintValue(NofNodes, decode, Phi):
         res -= Phi[i][decode[i]]
     return res
 
+def SolveConstrainedMatchingCD(NofNodes, G, Phi, X0, bestv, MaxIter=200):
+    G.ResetMax()
+    gamma = 0
+    LastDual = 1e20;
+    for iter in range(MaxIter):
+        G.UpdateMessages()
+        X, gamma,bestv = SolveForGamma(NofNodes, G, gamma, Phi, bestv)
+        Dual = G.DualValue()
+        print('iter = %d Dual = %f Primal = %f' % (iter, Dual, bestv))
+        if(np.abs(Dual - LastDual) < 1e-8):
+            break;
+        if(X is not None):
+            if hamming(X,X0) > 0 :
+                return X
+    return None
+
+def SolveForGamma(NofNodes, G, gamma, Phi, bestv):
+    L = 0
+    R = gamma + 0.5
+    gamma = R
+    AdditionOfPhi(NofNodes, 0.5, Phi, G)
+    X = None
+    while(True):
+        G.RunAuction()
+        cpv = G.CurrentPrimal()
+        fpv = ComputeConstraintValue(NofNodes, G.GetCurrentDecode(), Phi)
+        cv = cpv - R * fpv
+        if(fpv > 0):
+            if(cv > bestv):
+                X = G.GetCurrentDecode()
+                bestv = cv
+            break;
+        if(fpv < 0):
+            AdditionOfPhi(NofNodes, R, Phi, G)
+            L = R
+            R = R * 2
+            gamma = R
+    oldgamma = gamma
+    while(np.abs(L - R) > 1e-8):
+        gamma = (L + R) / 2
+        deltaGamma = (gamma - oldgamma)
+        oldgamma = gamma
+        AdditionOfPhi(NofNodes, deltaGamma, Phi, G)
+        G.RunAuction()
+        CX = G.GetCurrentDecode()
+        CV = G.CurrentPrimal()
+        fpv = ComputeConstraintValue(NofNodes, CX, Phi)
+        if(fpv < 0):
+            L = gamma
+        else:
+            R = gamma
+            CV = CV - gamma * fpv
+            if(CV  > bestv):
+                bestv = CV
+                X = CX
+    return X, gamma, bestv
+            
+
 def SolveConstrainedMatching(NofNodes, G, gamma0, Phi, bestv, X0,  eps=1e-6):
     L = 0
     R = gamma0
     #bestv = G.ComputeObj(X0.tolist())
     AdditionOfPhi(NofNodes,  gamma0, Phi, G)
     X = None
+    G.Solve(1000)
     while(True):
         #for i in range(MaxIter):
         #G.UpdateMessages();
         #print("")
         DualStore = G.StoreDual()
         G.ResetMax()
-        res = BSolver.BaBSolver(G,100,50,0.0005,True,-1e20)
+        res = BSolver.BaBSolver(G,100,5,0.0005,True,-1e20)
         G.ReStoreDual(DualStore)
         cpv = res.Value
-        fpv = ComputeConstraintValue(NofNodes, G.GetDecode(), Phi)
+        fpv = ComputeConstraintValue(NofNodes, res.Decode, Phi)
 
         if(np.abs(fpv) < eps):
             fpv = 0;
         if(fpv < 0):
-            R = R * 2
-            L = R
             AdditionOfPhi(NofNodes, R, Phi, G)
+            L = R
+            R = R * 2
         else:
             cv = cpv - R * fpv
             CX = G.GetDecode()
@@ -66,7 +125,7 @@ def SolveConstrainedMatching(NofNodes, G, gamma0, Phi, bestv, X0,  eps=1e-6):
                 return X;
             break;
     gamma = R
-    while(np.abs(L-R) > 1e-6):
+    while(np.abs(L-R) > 1e-8):
         ngamma = (L + R)*1.0 / 2;
         deltagamma = (ngamma - gamma);
         gamma = ngamma
@@ -74,10 +133,10 @@ def SolveConstrainedMatching(NofNodes, G, gamma0, Phi, bestv, X0,  eps=1e-6):
         G.ResetMax()
         DualStore = G.StoreDual()
         G.ResetMax()
-        res = BSolver.BaBSolver(G, 2000, 5, 0.0005, True, -1e20)
+        res = BSolver.BaBSolver(G, 100, 5, 0.000005, True, -1e20)
         G.ReStoreDual(DualStore)
         cpv = res.Value
-        fpv = ComputeConstraintValue(NofNodes, G.GetDecode(), Phi, )
+        fpv = ComputeConstraintValue(NofNodes, res.Decode, Phi, )
 
         if (np.abs(fpv) < eps):
             fpv = 0;
@@ -117,13 +176,17 @@ def FindNearSol(NofNodes, G, X, delta, MaxIter=1000):
 
     cbestv = G.ComputeObj(Xarray)
 
-    return SolveConstrainedMatching(NofNodes,G,gamma0,Phi, cbestv, X)
+    return SolveConstrainedMatchingCD(NofNodes, G, Phi, X, cbestv)
+
+    #return SolveConstrainedMatching(NofNodes,G,gamma0,Phi, cbestv, X)
 
 
 def FindModes(NofNodes, G, X0, delta, MaxIter = 1000):
     X1 = None
     for iter in range(MaxIter):
+        DualStore = G.StoreDual()
         X1 = FindNearSol(NofNodes, G, X0, delta)
+        G.ReStoreDual(DualStore)
         if(X1 is None):
             return X0
         if(hamming(X1,X0) == 0):

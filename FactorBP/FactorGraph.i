@@ -66,9 +66,9 @@ namespace std{
      
 //}
 
-%typemap(freearg) (int *decode){
-     if($1) free($1);
-}
+//%typemap(freearg) (int *decode){
+//     if($1) free($1);
+//}
 
 
 %include "BaBTypes.h"

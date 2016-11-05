@@ -206,92 +206,102 @@ bool zzhang::CFactorGraph::ReStoreDual(FactorGraphDualStore *store)
      }
      if(auFactor) auFactor->ReStore(store->AuctionStore);
      Evid = store->Evid;
-    return true;
+     return true;
 }
 
+void zzhang::CFactorGraph::RunAuction(){
+     if(auFactor){
+	  auFactor->Auction();
+     }
+     for(int i = 0; i < m_NofNodes; i++)
+     {
+	  m_CurrentDecode[i] = m_NodeFactors[i].m_LocalMax;
+     }
+     m_CurrentPrimal = ComputeObj(m_CurrentDecode);
+}
 
 void zzhang::CFactorGraph::UpdateMessages()
 {
-           long start = random();
-	   #if 0
-	   if(m_PrimalDualGap.size() != 0){
-		for(int ii = 0; ii < m_PrimalDualGap.size(); ii++)
-		{
-		     long i = m_PrimalDualGap[ii].first;
-		     //if((-m_Factors[i]->Primal(m_CurrentDecode)) < 1e-8){
-		     //	  continue;
-		     //}
-		     m_Factors[i]->UpdateMessages();
-		}
-	   }
-	   else{
-		for(int ii = 0; ii < m_Factors.size(); ii++)
-		{
-		     long i = (ii + start) % m_Factors.size();
-		     m_Factors[i]->UpdateMessages();
-		}
-	   }
-	   #endif
-	   for(int ii = 0; ii < m_Factors.size(); ii++)
-	   {
-		long i = (ii + start) % m_Factors.size();
-		m_Factors[i]->UpdateMessages();
-	   }
-	   if(auFactor)
-	   {
-		auFactor->Auction();
-	   }
-	   Dual = 0.0;
-	   for(int i = 0; i < m_NofNodes; i++)
-	   {
-		m_CurrentDecode[i] = m_NodeFactors[i].m_LocalMax;
-		Dual += m_bi[i][m_CurrentDecode[i]];
-	   }
-	   //std::cout << "Dual Here1 " << Dual << std::endl;
-	   if(auFactor) Dual += auFactor->SumPrice;
+     long start = random();
+#if 0
+     if(m_PrimalDualGap.size() != 0){
+	  for(int ii = 0; ii < m_PrimalDualGap.size(); ii++)
+	  {
+	       long i = m_PrimalDualGap[ii].first;
+	       //if((-m_Factors[i]->Primal(m_CurrentDecode)) < 1e-8){
+	       //	  continue;
+	       //}
+	       m_Factors[i]->UpdateMessages();
+	  }
+     }
+     else{
+	  for(int ii = 0; ii < m_Factors.size(); ii++)
+	  {
+	       long i = (ii + start) % m_Factors.size();
+	       m_Factors[i]->UpdateMessages();
+	  }
+     }
+#endif
+     for(int ii = 0; ii < m_Factors.size(); ii++)
+     {
+	  long i = (ii + start) % m_Factors.size();
+	  m_Factors[i]->UpdateMessages();
+     }
+     if(auFactor)
+     {
+	  auFactor->Auction();
+     }
+     Dual = 0.0;
+     for(int i = 0; i < m_NofNodes; i++)
+     {
+	  m_CurrentDecode[i] = m_NodeFactors[i].m_LocalMax;
+	  Dual += m_bi[i][m_CurrentDecode[i]];
+     }
+     //std::cout << "Dual Here1 " << Dual << std::endl;
+     if(auFactor) Dual += auFactor->SumPrice;
 	   
-	   //std::cout << "Dual Here2 " << Dual << std::endl;
-	   double Primal = Dual;
-	   m_PrimalDualGap = std::vector< std::pair<int, double> > (m_Factors.size());
-	   for(int i = 0; i <m_Factors.size(); i++)
-	   {
-		double CPrimal = m_Factors[i]->Primal(m_CurrentDecode);
-		Primal += CPrimal;
-		m_PrimalDualGap[i] = std::pair<int,double>(i, CPrimal);
-	   }
-	   std::sort(m_PrimalDualGap.begin(),
-		     m_PrimalDualGap.end(),
-		     [](const std::pair<int, double>& a,
-			const std::pair<int, double>& b){
-			  return a.second < b.second;
-		     });
+     //std::cout << "Dual Here2 " << Dual << std::endl;
+     double Primal = Dual;
+     m_PrimalDualGap = std::vector< std::pair<int, double> > (m_Factors.size());
+     for(int i = 0; i <m_Factors.size(); i++)
+     {
+	  double CPrimal = m_Factors[i]->Primal(m_CurrentDecode);
+	  Primal += CPrimal;
+	  m_PrimalDualGap[i] = std::pair<int,double>(i, CPrimal);
+     }
+     std::sort(m_PrimalDualGap.begin(),
+	       m_PrimalDualGap.end(),
+	       [](const std::pair<int, double>& a,
+		  const std::pair<int, double>& b){
+		    return a.second < b.second;
+	       });
 
-	   //std::cout << "Largest Gap: " << m_PrimalDualGap[0].second << std::endl;
-	   //std::cout << "Smallest Gap: " << m_PrimalDualGap[m_PrimalDualGap.size() - 1].second << std::endl;
+     //std::cout << "Largest Gap: " << m_PrimalDualGap[0].second << std::endl;
+     //std::cout << "Smallest Gap: " << m_PrimalDualGap[m_PrimalDualGap.size() - 1].second << std::endl;
 	   
-	   
-	   if(Primal > BestDecodeV)
-	   {
-		BestDecodeV = Primal;
-		memcpy(m_BestDecode, m_CurrentDecode, sizeof(int) * m_NofNodes);
-	   }
-	   if(m_verbose) std::cout << "Current Dual " << Dual << " Current Primal " << BestDecodeV ;
+     m_CurrentPrimal = Primal;
+     if(Primal > BestDecodeV)
+     {
+	  BestDecodeV = Primal;
+	  memcpy(m_BestDecode, m_CurrentDecode, sizeof(int) * m_NofNodes);
+     }
+     if(m_verbose) std::cout << "Current Dual " << Dual << " Current Primal " << BestDecodeV ;
 }
 
 
 bool zzhang::CFactorGraph::AddGenericGenericSparseFactor(const std::vector<int> &Nodes, const std::vector<std::vector<int> > &NNZs, double *NNZv){
-    std::vector<NodeFactor *> NodeFactors(Nodes.size());
-    for(int i = 0; i < Nodes.size(); i++)
-    {
-        NodeFactors[i] = &m_NodeFactors[Nodes[i]];
-    }
+     std::vector<NodeFactor *> NodeFactors(Nodes.size());
+     for(int i = 0; i < Nodes.size(); i++)
+     {
+	  NodeFactors[i] = &m_NodeFactors[Nodes[i]];
+     }
     
-    zzhang::CGeneralSparseFactor * factor = new zzhang::CGeneralSparseFactor(Nodes,
-                                                                             NNZs,
-                                                                             NNZv,
-                                                                             std::vector<Real *>(0),
-                                                                             NodeFactors);
-    m_Factors.push_back(factor);
-    return true;
+     zzhang::CGeneralSparseFactor * factor = new zzhang::CGeneralSparseFactor(Nodes,
+									      NNZs,
+									      NNZv,
+									      std::vector<Real *>(0),
+									      NodeFactors);
+     m_Factors.push_back(factor);
+     return true;
     
 }

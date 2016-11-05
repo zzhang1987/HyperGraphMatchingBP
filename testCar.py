@@ -2,8 +2,6 @@ import numpy as np;
 import FactorBP as FB
 from Utils import LoadCar
 from FactorBP.FindNearSol import FindModes
-import ipdb
-
 
 def ComputeAccuracyPas(decode, gTruth, NofInliers ):
     Ccnt = 0
@@ -11,12 +9,17 @@ def ComputeAccuracyPas(decode, gTruth, NofInliers ):
         if(decode[i] == gTruth[i]):
             Ccnt += 1
     return 1.0 * Ccnt / NofInliers
+def GenRandomLabel(X0, delta1):
+    t1 = np.random.permutation(X0.shape[0])
+    t2 = t1[0:delta1]
+    t3 = np.random.permutation(t2)
+    X1 = X0.copy()
+    X1[t2] = X0[t3]
+    return X1
 
-
-ipdb.set_trace()
 CarData = LoadCar()
 
-NofOus = 10
+NofOus = 5
 idx = 1
 
 np.random.seed(123456)
@@ -58,11 +61,29 @@ MG2 = FB.MatchingGraph(PT2[0:NofNodes], orientation2[0:NofNodes])
 print(gTruth)
 #print(G2.GetDecode())
 
-G3,MFname = FB.ConstructMatchingModel(MG1, MG2, 'pas', AddEdge = True, AddTriplet = False)
+G3,MFname = FB.ConstructMatchingModel(MG1, MG2, 'pasDis', AddEdge = True, AddTriplet = False)
 
 #XMAP = FB.BaBSolver
 
 #X0 = np.random.permutation(NofNodes)
 #delta = 6
 #X = FindModes(NofNodes, G3, X0, delta)
+DualStore = G3.StoreDual()
+
+res = FB.BaBSolver(G3, 100, 10, 0.005, True)
+
+
+delta1 = 12
+delta2 = 8
+
+
+for i in range(100):
+    X1 = GenRandomLabel(res.Decode, NofNodes)
+    G3.ReStoreDual(DualStore)
+    G3.ResetMax()
+    X2 = FindModes(NofNodes, G3, X1, delta2)
+
+    print(X2)
+
+    print(ComputeAccuracyPas(X2, gTruth, NofInliers))
 

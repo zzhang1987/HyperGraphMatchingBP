@@ -55,16 +55,9 @@ class BaBNode:
         self.LB = LB
         self.Gap = Gap
 
-    def __del__(self):
-        #print("Node deleted!");
-        if self.DualStore is not None:
-            del self.DualStore
-            self.DualStore = None
-        if self.Node is not None:
-            del self.Node
-        if self.AssignMent is not None:
-            del self.AssignMent
-
+    #def __del__(self):
+    #print("Node deleted!");
+    
     def __lt__(self, other):
         if(self.UB > other.UB):
             return True
