@@ -223,7 +223,7 @@ def FindMModes(NofNodes, G, delta, N, MaxIter = 1000):
 def RunDataMModes((Fname, data, idx, NofOus)):
     car1 = data[idx]
     delta = 4
-    N = 10
+    N = 100
     LocalFeature1 = car1['features1']
     LocalFeature2 = car1['features2']
         
