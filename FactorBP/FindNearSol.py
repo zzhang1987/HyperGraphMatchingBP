@@ -18,6 +18,10 @@ import numpy as np
 import FactorGraph as FG
 import BaBSolver as BSolver
 from scipy.spatial.distance import hamming
+import cPickle as pickle
+import MatchingGraph as MG
+import FactorGraph as FG
+
 
 def AdditionOfPhi(NofNodes, gamma, Phi, G):
     bi = FG.doubleArray(NofNodes)
@@ -40,9 +44,10 @@ def SolveConstrainedMatchingCD(NofNodes, G, Phi, X0, bestv, MaxIter=200):
         G.UpdateMessages()
         X, gamma,bestv = SolveForGamma(NofNodes, G, gamma, Phi, bestv)
         Dual = G.DualValue()
-        print('iter = %d Dual = %f Primal = %f' % (iter, Dual, bestv))
+        #print('iter = %d Dual = %f Primal = %f' % (iter, Dual, bestv))
         if(np.abs(Dual - LastDual) < 1e-8):
             break;
+        LastDual = Dual
         if(X is not None):
             if hamming(X,X0) > 0 :
                 return X
@@ -103,7 +108,7 @@ def SolveConstrainedMatching(NofNodes, G, gamma0, Phi, bestv, X0,  eps=1e-6):
         #print("")
         DualStore = G.StoreDual()
         G.ResetMax()
-        res = BSolver.BaBSolver(G,100,5,0.0005,True,-1e20)
+        res = BSolver.BaBSolver(G,100,5,0.0005,False,-1e20)
         G.ReStoreDual(DualStore)
         cpv = res.Value
         fpv = ComputeConstraintValue(NofNodes, res.Decode, Phi)
@@ -193,5 +198,67 @@ def FindModes(NofNodes, G, X0, delta, MaxIter = 1000):
             return X1
         X0 = X1
     return X1
+    
+    
+def FindMModes(NofNodes, G, delta, N, MaxIter = 1000):
+    res = dict()
+    G.Solve(1000)
+    DualStore = G.StoreDual()
+    G.ResetMax()
+    Xarray = FG.intArray(NofNodes)
+
+    for i in range(N):
+        X = np.random.permutation(NofNodes)
+        X1 = FindModes(NofNodes, G, X, delta, MaxIter)
+        for i in range(NofNodes):
+            Xarray[i] = int(X1[i])
+        X1 = np.array(X1, dtype=np.int32)
+        G.ReStoreDual(DualStore)
+        v = G.ComputeObj(Xarray)
+        res[X1.tostring()] = v
+
+    return res
+
+
+def RunDataMModes((Fname, data, idx, NofOus)):
+    car1 = data[idx]
+    delta = 4
+    N = 10
+    LocalFeature1 = car1['features1']
+    LocalFeature2 = car1['features2']
+        
+    PT1 = LocalFeature1[:, 0:2]
+    PT2 = LocalFeature2[:, 0:2]
+    
+    
+    orientation1 = LocalFeature1[:, 8]
+    orientation2 = LocalFeature2[:, 8]
+    
+    GT = car1['gTruth'][0]
+    
+    NofInliers = len(GT)
+    CMaxNofOus = np.min([LocalFeature1.shape[0], LocalFeature2.shape[0]]) - NofInliers
+    CNofOus = NofOus
+    if(CNofOus > CMaxNofOus):
+        CNofOus = CMaxNofOus
+    NofNodes = CNofOus + NofInliers
+    gTruth = np.random.permutation(NofNodes)
+    PT1 = PT1[gTruth, :]
+
+    orientation1 = orientation1[gTruth]
+    MG1 = MG.MatchingGraph(PT1[0:NofNodes], orientation1[0:NofNodes])
+    MG2 = MG.MatchingGraph(PT2[0:NofNodes], orientation2[0:NofNodes])
+    G,MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
+
+    MModes = FindMModes(NofNodes, G, delta, N)
+
+    Fname = '%s_ID%d_NOus%d.pkl' % (Fname, idx, NofOus)
+    f = open(Fname, "w")
+    pickle.dump(MModes, f)
+    pickle.dump(gTruth, f)
+    pickle.dump(NofOus, f)
+    f.close()
+    
+
     
     

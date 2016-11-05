@@ -115,4 +115,5 @@ f = open('CarRes.pkl', "w")
 pickle.dump(AllAcc,f)
 pickle.dump(AllRtime,f)
 pickle.dump(NofOus,f)
+f.close()
 
