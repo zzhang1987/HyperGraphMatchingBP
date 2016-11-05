@@ -252,6 +252,16 @@ def ComputeKQ(G1, G2, Type):
         agdistTable = ComputeAngleDistance(G1.EdgeFeature[:, 1], np.append(G2.EdgeFeature[:,1], G2.EdgeFeature[:,3]))
 
         KQ = np.exp(-(distTable + agdistTable)/2) * 2
+    if(Type == 'pasDisOnly'):
+        distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
+                                           np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
+        for i in range(NofEdges1):
+            for j in range(G2.Edges.shape[0]):
+                distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
+                distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
+ 
+
+        KQ = np.exp(-distTable) * 2
     if(Type == 'pas'):
         distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
                                            np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
