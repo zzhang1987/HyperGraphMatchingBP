@@ -167,6 +167,27 @@ def computeTripletsFeatureSinAlpha(Points, T):
         F[idx] = vecX[((idx+1)%3)]*vecY[idx]-vecY[((idx+1)%3)]*vecX[idx]
 
     return F
+
+
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    return vector / np.linalg.norm(vector)
+
+
+def angle_between(v1, v2):
+    """ Returns the angle in radians between vectors 'v1' and 'v2'::
+
+            >>> angle_between((1, 0, 0), (0, 1, 0))
+            1.5707963267948966
+            >>> angle_between((1, 0, 0), (1, 0, 0))
+            0.0
+            >>> angle_between((1, 0, 0), (-1, 0, 0))
+            3.141592653589793
+    """
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+
 def computeTripletsFeatureSimple(Points, T):
     vecX = np.zeros(3)
     vecY = np.zeros(3)
@@ -177,29 +198,22 @@ def computeTripletsFeatureSimple(Points, T):
     for idx in range(3):
         P1 = Points[T[(idx + 1)%3]] -  Points[T[idx]]
         P2 = Points[T[(idx + 2)%3]] - Points[T[idx]]
-        l1 = np.linalg.norm(P1)
-        l2 = np.linalg.norm(P2)
-
-        if(l1 != 0):
-            P1 /= l1
-        if(l2 != 0):
-            P2 /= l2
-
-        F[idx] = np.arccos(P1[0] * P2[0] + P1[1] * P2[1])
-        
-        #length = np.linalg.norm([vecX[idx], vecY[idx]])
-        #if(length != 0):
+  
+    
+        F[idx] = angle_between(P1,P2)
+        # length = np.linalg.norm([vecX[idx], vecY[idx]])
+        # if(length != 0):
         #    vecX[idx] /= length
         #    vecY[idx] /= length
-        #else:
+        # else:
         #    vecX[idx] = 0
         #    vecY[idx] = 0
-            
-            
-    #for idx in range(3):
-        #F[idx] = np.arctan2(vecX[idx], vecY[idx])
+    # for idx in range(3):
+        # F[idx] = np.arctan2(vecX[idx], vecY[idx])
         
     return F
+
+
 def computeEdgeFeatureSimple(Points, E1, E2):
     Vec = Points[E1] - Points[E2]
     F = np.zeros(4)
@@ -223,7 +237,7 @@ def ComputeMultiAngleDistance(F1,F2):
             AngD = F1[i] - F2[j]
             for ai in range(AngD.shape[0]):
                 if(AngD[ai] < 0):
-                    AngD[ai] = AngD[ai]
+                    AngD[ai] = -AngD[ai]
                 if(AngD[ai] > np.pi):
                     AngD[ai] = 2 * np.pi - AngD[ai]
             res[i][j] = np.linalg.norm(AngD)
@@ -236,7 +250,7 @@ def ComputeAngleDistance(F1, F2):
             if(res[i][j] < 0):
                 res[i][j] = -res[i][j]
             if(res[i][j] > np.pi):
-                res[i][j] -= np.pi
+                res[i][j] = 2 * np.pi - res[i][j]
     return res
 def ComputeKQ(G1, G2, Type):
     NofEdges1 = G1.Edges.shape[0]
@@ -259,8 +273,6 @@ def ComputeKQ(G1, G2, Type):
             for j in range(G2.Edges.shape[0]):
                 distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
                 distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
- 
-
         KQ = np.exp(-distTable) * 2
     if(Type == 'pas'):
         distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
@@ -309,7 +321,7 @@ def ComputeKQ(G1, G2, Type):
 
 def ComputeKT(G1,G2):
     distTable = ComputeMultiAngleDistance(G1.TFeature, G2.PTFeature)
-    KT = np.exp(-distTable/np.mean(distTable))
+    KT = np.exp(-distTable/2 * np.pi)
     return KT
 
 def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
@@ -421,7 +433,7 @@ def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
 def ComputeSimilarity(G1, G2, Type):
     KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature)
     KQ = ComputeKQ(G1, G2, Type)
-    KT = 0.5 * ComputeKT(G1, G2)
+    KT = 2 * ComputeKT(G1, G2)
     KP = np.exp(-(KP))
     return KP,KQ,KT
 

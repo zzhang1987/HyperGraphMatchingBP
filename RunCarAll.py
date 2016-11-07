@@ -95,25 +95,28 @@ for NofOus in range(0,MaxNofOus+1):
                         Accuracy[FullMethods] = dict()
                         Rtime[FullMethods] = dict()
                         Obj[FullMethods] = dict()
-                    decode,rtime,obj = RA.RunAlgorithm(MG1, MG2, WithEdge,
-                                                       True,  Type, methods,
-                                                       eng)
-                    Accuracy[FullMethods][idx] = ComputeAccuracyPas(decode, gTruth, NofInliers)
+                    decode, rtime, obj = RA.RunAlgorithm(MG1, MG2, WithEdge,
+                                                         True, Type, methods,
+                                                         eng)
+                    Accuracy[FullMethods][idx] = ComputeAccuracyPas(decode,
+                                                                    gTruth,
+                                                                    NofInliers)
                     Rtime[FullMethods][idx] = rtime
                     Obj[FullMethods][idx] = obj
-                    Fname = ('Res/Car%d_Nous%d_' + FullMethods + '.pdf') % (idx, NofOus)
-                    dm.drawMatchesWithOutlier(car1['I1'],car1['I2'],PT1[0:NofNodes],PT2[0:NofNodes],decode, gTruth, NofInliers, Fname)
+                    Fname = ('Res/Car%d_Nous%d_' + FullMethods
+                             + '.pdf') % (idx, NofOus)
+                    dm.drawMatchesWithOutlier(car1['I1'], car1['I2'],
+                                              PT1[0:NofNodes], PT2[0:NofNodes],
+                                              decode, gTruth,
+                                              NofInliers, Fname)
         
-                
     AllAcc[NofOus] = Accuracy
     AllRtime[NofOus] = Rtime
     AllObj[NofOus] = Obj
-
-
                 
 f = open('CarRes.pkl', "w")
-pickle.dump(AllAcc,f)
-pickle.dump(AllRtime,f)
-pickle.dump(NofOus,f)
+pickle.dump(AllAcc, f)
+pickle.dump(AllRtime, f)
+pickle.dump(AllObj, f)
 f.close()
 
