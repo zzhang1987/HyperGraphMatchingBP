@@ -466,8 +466,8 @@ def ConstructMatchingModel(G1, G2, Type, AddTriplet = True, AddEdge = True):
         MatRes['NTriplets'] = G2.PermunatedTriplets
         MatRes['Similarity'] = KT
     if AddEdge:
-        MatRes['P1'] = G1.P
-        MatRes['P2'] = G2.P
+        # MatRes['P1'] = G1.P
+        # MatRes['P2'] = G2.P
         MatRes['Edges'] = G1.Edges
         MatRes['NEdges'] = G2.Edges
         MatRes['KQ'] = KQ
