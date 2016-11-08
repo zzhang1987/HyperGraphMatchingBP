@@ -5,7 +5,7 @@ import numpy as np;
 import FactorBP as FB
 import drawMatches as dm
 import RunAlgorithm as RA
-from Utils import LoadMotor
+from Utils import LoadCar
 import cPickle as pickle
 
 
@@ -16,7 +16,7 @@ def ComputeAccuracyPas(decode, gTruth, NofInliers ):
             Ccnt += 1
     return 1.0 * Ccnt / NofInliers
 # eng = matlab.engine.start_matlab()
-CarData = LoadMotor()
+CarData = LoadCar()
 
 
 AlgorithmNames=['Ours', 'OursBca', 'BCA', 'BCA-MP', 'BCA-IPFP', 'HGM', 'RRWHM', 'TM', 'OursPW', 'FGM']
@@ -25,7 +25,7 @@ SecondOrderMethods = ('Ours', 'FGM')
 ThirdOrderMethods = ('Ours', 'OursBca', 'BCA', 'BCA-MP', 'BCA-IPFP', 'HGM', 'RRWHM', 'TM')
 
 MaxNofOus = 20
-NofInstances = 20
+NofInstances = 30
 reload(RA)
 AllAcc = dict()
 AllRtime = dict()
@@ -81,7 +81,7 @@ for NofOus in range(0,MaxNofOus+1):
                         Rtime[FullMethods][idx] = rtime
                         Obj[FullMethods][idx] = obj
 
-                        Fname = ('Res/Motor%d_Nous%d_' + FullMethods + '.pdf') % (idx, NofOus)
+                        Fname = ('Res/Car%d_Nous%d_' + FullMethods + '.pdf') % (idx, NofOus)
                         dm.drawMatchesWithOutlier(car1['I1'],car1['I2'],PT1[0:NofNodes],PT2[0:NofNodes],decode, gTruth, NofInliers, Fname)
 
 
@@ -101,7 +101,7 @@ for NofOus in range(0,MaxNofOus+1):
                     Accuracy[FullMethods][idx] = ComputeAccuracyPas(decode, gTruth, NofInliers)
                     Rtime[FullMethods][idx] = rtime
                     Obj[FullMethods][idx] = obj
-                    Fname = ('Res/Motor%d_Nous%d_' + FullMethods + '.pdf') % (idx, NofOus)
+                    Fname = ('Res/Car%d_Nous%d_' + FullMethods + '.pdf') % (idx, NofOus)
                     dm.drawMatchesWithOutlier(car1['I1'],car1['I2'],PT1[0:NofNodes],PT2[0:NofNodes],decode, gTruth, NofInliers, Fname)
         
                 
@@ -111,8 +111,8 @@ for NofOus in range(0,MaxNofOus+1):
 
 
                 
-f = open('MotorRes.pkl', "w")
+f = open('CarRes.pkl', "w")
 pickle.dump(AllAcc,f)
 pickle.dump(AllRtime,f)
-pickle.dump(AllObj,f)
-f.close()
+pickle.dump(NofOus,f)
+

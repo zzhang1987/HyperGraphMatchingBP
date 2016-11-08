@@ -1,9 +1,7 @@
-import numpy as np;
 from Utils import LoadCar
 from FactorBP.FindNearSol import RunDataMModes
 
 import multiprocessing as mp
-from contextlib import contextmanager
 from itertools import product
 
 

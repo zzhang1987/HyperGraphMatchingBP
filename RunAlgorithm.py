@@ -28,7 +28,7 @@ def RunAlgorithm(MG1, MG2, WithEdge, WithTriplet, Type, AlgoName, eng):
         Decode = res1.Decode
         RTime = res1.Time
         Obj = res1.Value
-        return Decode,RTime,Obj
+        return Decode, RTime, Obj
     if(AlgoName == 'OursBca'):
         res1 = FB.BaBSolver(G, 120, 10, 0.005, False)
         start_time = time.time()
