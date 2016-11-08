@@ -4,6 +4,7 @@ from FactorGraph import CFactorGraph, intArray, doubleArray, VecInt, VecVecInt
 from sklearn.neighbors import KDTree
 import scipy.io as sio
 import tempfile as tmp
+from scipy.spatial.distance import hamming
 def rand_rotation_matrix(deflection=1.0, randnums=None):
     """
     Creates a random rotation matrix.
@@ -210,11 +211,14 @@ def computeEdgeFeatureSimple(Points, E1, E2):
     return F
 
 
-def ComputeFeatureDistance(F1, F2):
+def ComputeFeatureDistance(F1, F2, dis='L2'):
     res = np.zeros([F1.shape[0], F2.shape[0]])
     for i in range(F1.shape[0]):
         for j in range(F2.shape[0]):
-            res[i][j] = (np.linalg.norm(F1[i] - F2[j]))
+            if(dis == 'L2'):
+                res[i][j] = (np.linalg.norm(F1[i] - F2[j]))
+            elif(dis == 'hamming'):
+                res[i][j] = hamming(F1[i],F2[j])
     return res
 def ComputeMultiAngleDistance(F1,F2):
     res = np.zeros([F1.shape[0], F2.shape[0]])
@@ -419,7 +423,11 @@ def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
     return G
 
 def ComputeSimilarity(G1, G2, Type):
-    KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature)
+    if(Type == 'syn'):
+        KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature, dis='hamming')
+    else:
+        KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature)
+
     KQ = ComputeKQ(G1, G2, Type)
     KT = 0.5 * ComputeKT(G1, G2)
     KP = np.exp(-(KP))
