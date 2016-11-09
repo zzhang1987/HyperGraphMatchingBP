@@ -173,7 +173,7 @@ def FindBestGamma2(NofNodes, G, X0, delta, gamma):
 
         Gaps[i] = - MaxV + G(int(Xtrans[i]), i)
     nGap = np.sort(Gaps)
-    deltaGamma = - nGap[delta - 1]
+    deltaGamma = - nGap[delta] + 1e-8
     for j in range(NofNodes):
         #for j in range(NofNodes):
         #    if(i == X0[j]):
@@ -192,7 +192,7 @@ def FindBestGamma(NofNodes, G, X0, delta, gamma):
                 MaxV = G(i,j)
         Gaps[i] = - MaxV  + G(i,int(X0[i]))
     nGap = np.sort(Gaps)
-    deltaGamma = - nGap[delta - 1]
+    deltaGamma = - nGap[delta] + 1e-8
     for i in range(NofNodes):
         #for j in range(NofNodes):
         #if(j == X0[i]):
@@ -201,7 +201,7 @@ def FindBestGamma(NofNodes, G, X0, delta, gamma):
         #G(i, X0[i]) = G(i, X0[i]) + deltaGamma
     gamma = gamma + deltaGamma
     return gamma
-def FindNearMatching(NofNodes, G, delta, X0, bestv, MaxIter=1000):
+def FindNearMatching(NofNodes, G, delta, X0, bestv, MaxIter=400):
     G.ResetMax()
     gamma1 = 0
     gamma2 = 0
@@ -213,16 +213,16 @@ def FindNearMatching(NofNodes, G, delta, X0, bestv, MaxIter=1000):
         gamma2 = FindBestGamma2(NofNodes, G, X0, delta, gamma2)
         G.RunAuction()
 
-        Dual = G.DualValue() - (gamma1 + gamma2) * delta
+        Dual = G.DualValue() - (gamma1 + gamma2) * ( NofNodes - delta)
 
         X = G.GetCurrentDecode()
         CV = G.CurrentPrimal()
-        cpv = CV - (1 - hamming(X, X0)) * NofNodes * gamma1 + (1 - hamming(X,X0)) * NofNodes * gamma2
+        cpv = CV - (1 - hamming(X, X0)) * NofNodes * gamma1 - (1 - hamming(X,X0)) * NofNodes * gamma2
         if(cpv > bestv and hamming(X,X0) > 0
            and np.floor(hamming(X,X0) * NofNodes) <= delta):
             return X
-        print('iter = %d Dual = %f Dis = %f, ' % (iter, Dual, hamming(X,X0) * NofNodes))
-        if(np.abs(Dual - LastDual) < 1e-8):
+        #print('iter = %d Dual = %f Dis = %f, ' % (iter, Dual, hamming(X,X0) * NofNodes))
+        if(np.abs(Dual - LastDual) < 1e-4):
             break;
         LastDual = Dual
     return None
@@ -288,7 +288,7 @@ def FindMModes(NofNodes, G, delta, N, MaxIter = 1000):
 
 def RunDataMModes((Fname, data, idx, NofOus)):
     car1 = data[idx]
-    delta = 4
+    delta = 3
     N = 100
     LocalFeature1 = car1['features1']
     LocalFeature2 = car1['features2']

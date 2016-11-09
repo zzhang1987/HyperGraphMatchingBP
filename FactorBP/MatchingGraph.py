@@ -256,6 +256,7 @@ def ComputeAngleDistance(F1, F2):
             if(res[i][j] > np.pi):
                 res[i][j] = 2 * np.pi - res[i][j]
     return res
+
 def ComputeKQ(G1, G2, Type):
     NofEdges1 = G1.Edges.shape[0]
     NofEdges2 = G2.Edges.shape[0] * 2
@@ -321,7 +322,16 @@ def ComputeKQ(G1, G2, Type):
                 distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
                 distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
         KQ = np.exp(-(distTable)) * 2
-        KQ = 0.15 * np.ones(distTable.shape)
+        KQ = np.zeros(distTable.shape)
+    if (Type == 'topo'): # add by Lee at 13:44PM 9th November
+        distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
+                                           np.append(G2.EdgeFeature[:, 0], G2.EdgeFeature[:, 2]))
+        #for i in range(NofEdges1):
+        #    for j in range(G2.Edges.shape[0]):
+        #        distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
+        #        distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
+        # KQ = np.exp(-(distTable)) * 2
+        KQ = np.ones(distTable.shape)
     return KQ
 
 def ComputeKT(G1,G2):
