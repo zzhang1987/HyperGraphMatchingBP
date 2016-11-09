@@ -303,6 +303,7 @@ def ComputeKQ(G1, G2, Type):
                                            np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
         
         KQ = np.exp(-(distTable**2)/2500) * 2
+        
     if(Type == 'syn'):
         distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
                                            np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
@@ -320,7 +321,7 @@ def ComputeKQ(G1, G2, Type):
                 distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
                 distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
         KQ = np.exp(-(distTable)) * 2
-        KQ = np.zeros(distTable.shape)
+        KQ = 0.15 * np.ones(distTable.shape)
     return KQ
 
 def ComputeKT(G1,G2):

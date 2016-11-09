@@ -120,7 +120,17 @@ namespace zzhang{
 	       SubTourFactor *subTour = new SubTourFactor(N, Nodes, m_NofStates, AssignMents, m_bi, m_NodeFactors);
 	       m_Factors.push_back(subTour);
 	  }
-
+	  
+	  double operator()(int i1, int i2){
+	       assert(i1 >= 0 && i1 < m_NofNodes);
+	       assert(i2 >= 0 && i2 < m_NofStates[i2]);
+	       return m_bi[i1][i2];
+	  }
+	  void AddValue(int i1, int i2, double V){
+	       assert(i1 >= 0 && i1 < m_NofNodes);
+	       assert(i2 >= 0 && i2 < m_NofStates[i2]);
+	       m_bi[i1][i2] += V;
+	  }
 	  
 	  
 	  virtual ~CFactorGraph(){

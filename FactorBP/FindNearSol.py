@@ -159,29 +159,95 @@ def SolveConstrainedMatching(NofNodes, G, gamma0, Phi, bestv, X0,  eps=1e-6):
                 return X;
     return X
 
-                
+
+def FindBestGamma2(NofNodes, G, X0, delta, gamma):
+    Gaps = np.zeros(NofNodes);
+    Xtrans = np.zeros(X0.shape, dtype=np.int32)
+    for i in range(NofNodes):
+        Xtrans[X0[i]] = i
+    for i in range(NofNodes):
+        MaxV = -1e100
+        for j in range(0, NofNodes):
+            if (G(j, i) > MaxV):
+                MaxV = G(j, i)
+
+        Gaps[i] = - MaxV + G(int(Xtrans[i]), i)
+    nGap = np.sort(Gaps)
+    deltaGamma = - nGap[delta - 1]
+    for j in range(NofNodes):
+        #for j in range(NofNodes):
+        #    if(i == X0[j]):
+        #        continue
+        #    G.AddValue(j, i, -deltaGamma)
+        G.AddValue(int(Xtrans[j]), j, deltaGamma)
+    gamma = gamma + deltaGamma
+    return gamma
         
+def FindBestGamma(NofNodes, G, X0, delta, gamma):
+    Gaps = np.zeros(NofNodes);
+    for i in range(NofNodes):
+        MaxV = -1e100
+        for j in range(0, NofNodes):
+            if(G(i,j) > MaxV):
+                MaxV = G(i,j)
+        Gaps[i] = - MaxV  + G(i,int(X0[i]))
+    nGap = np.sort(Gaps)
+    deltaGamma = - nGap[delta - 1]
+    for i in range(NofNodes):
+        #for j in range(NofNodes):
+        #if(j == X0[i]):
+        #    continue
+        G.AddValue(i, int(X0[i]), deltaGamma)
+        #G(i, X0[i]) = G(i, X0[i]) + deltaGamma
+    gamma = gamma + deltaGamma
+    return gamma
+def FindNearMatching(NofNodes, G, delta, X0, bestv, MaxIter=1000):
+    G.ResetMax()
+    gamma1 = 0
+    gamma2 = 0
+    LastDual = 1e20;
+    for iter in range(MaxIter):
+
+        G.UpdateMessages()
+        gamma1 = FindBestGamma(NofNodes, G, X0, delta, gamma1)
+        gamma2 = FindBestGamma2(NofNodes, G, X0, delta, gamma2)
+        G.RunAuction()
+
+        Dual = G.DualValue() - (gamma1 + gamma2) * delta
+
+        X = G.GetCurrentDecode()
+        CV = G.CurrentPrimal()
+        cpv = CV - (1 - hamming(X, X0)) * NofNodes * gamma1 + (1 - hamming(X,X0)) * NofNodes * gamma2
+        if(cpv > bestv and hamming(X,X0) > 0
+           and np.floor(hamming(X,X0) * NofNodes) <= delta):
+            return X
+        print('iter = %d Dual = %f Dis = %f, ' % (iter, Dual, hamming(X,X0) * NofNodes))
+        if(np.abs(Dual - LastDual) < 1e-8):
+            break;
+        LastDual = Dual
+    return None
+
 
 def FindNearSol(NofNodes, G, X, delta, MaxIter=1000):
-    Phi = np.ones([NofNodes, NofNodes])
+    #Phi = np.ones([NofNodes, NofNodes])
     G.ResetMax()
-    gamma0 = 4
+    #gamma0 = 4
 
     if(delta==1):
         delta = 2;
 
 
-    for i in range(NofNodes):
-        Phi[i][X[i]] = 0
+    #for i in range(NofNodes):
+    #    Phi[i][X[i]] = 0
 
-    Phi -= delta*1.0 / NofNodes
+    #Phi -= delta*1.0 / NofNodes
     Xarray = FG.intArray(NofNodes)
     for i in range(NofNodes):
         Xarray[i] = int(X[i])
 
     cbestv = G.ComputeObj(Xarray)
-
-    return SolveConstrainedMatchingCD(NofNodes, G, Phi, X, cbestv)
+    return FindNearMatching(NofNodes, G, delta, X,  cbestv)
+    #return SolveConstrainedMatchingCD(NofNodes, G, Phi, X, cbestv)
 
     #return SolveConstrainedMatching(NofNodes,G,gamma0,Phi, cbestv, X)
 
