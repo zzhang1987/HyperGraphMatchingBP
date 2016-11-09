@@ -83,7 +83,6 @@ def ParallelDivMBest(NofNodes, GGroup, delta,  MaxIter = 100):
 
 def RunDataPDiverse((Fname, data, idx, NofOus, NofSolutions, delta)):
     car1 = data[idx]
-    delta = 3
     N = 10
     LocalFeature1 = car1['features1']
     LocalFeature2 = car1['features2']
@@ -112,7 +111,7 @@ def RunDataPDiverse((Fname, data, idx, NofOus, NofSolutions, delta)):
     for i in range(NofSolutions):
         GGroup[i], MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
     res = ParallelDivMBest(NofNodes, GGroup, delta)
-    Fname = '%s_ID%d_NOus%d_PDiverse.pkl' % (Fname, idx, NofOus)
+    Fname = '%s_ID%d_NOus%d_Delta_%f_PDiverse.pkl' % (Fname, idx, NofOus, delta)
 
     f = open(Fname, "w")
     pickle.dump(res, f)
@@ -120,9 +119,9 @@ def RunDataPDiverse((Fname, data, idx, NofOus, NofSolutions, delta)):
     pickle.dump(NofOus, f)
     f.close()
 
+
 def RunDataSDiverse((Fname, data, idx, NofOus, delta)):
     car1 = data[idx]
-    delta = 3
     N = 10
     LocalFeature1 = car1['features1']
     LocalFeature2 = car1['features2']
@@ -152,7 +151,7 @@ def RunDataSDiverse((Fname, data, idx, NofOus, delta)):
     
     MDiverse = SequentialDivMBest(NofNodes, G, delta, N)
     
-    Fname = '%s_ID%d_NOus%d_SDiverse.pkl' % (Fname, idx, NofOus)
+    Fname = '%s_ID%d_NOus%d_Delta_%f_SDiverse.pkl' % (Fname, idx, NofOus, delta)
 
     f = open(Fname, "w")
     pickle.dump(MDiverse, f)
