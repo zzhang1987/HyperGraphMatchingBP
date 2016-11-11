@@ -19,8 +19,8 @@ def ComputeAccuracyPas(decode, gTruth, NofInliers):
     return 1.0 * Ccnt / NofInliers
 
 
-Index = range(1,31)
-NOus = range(0,21)
+Index = range(1, 31)
+NOus = range(0, 21)
 Fname = 'Car'
 MeanAccMap = np.zeros(len(NOus))
 MeanAccMax = np.zeros(len(NOus))
@@ -29,13 +29,17 @@ for NofOus in NOus:
     AccuracyMap = np.zeros(len(Index))
     
     for idx in Index:
-        FileName = 'Diverse/%s_ID%d_NOus%d_Delta_0.600000_SDiverse.pkl' % (Fname, idx, NofOus)
+        FileName = 'Diverse/%s_ID%d_NOus%d_Delta_0.100000_SDiverse.pkl' % (Fname, idx, NofOus)
+        #FileName = '%s_ID%d_NOus%d.pkl' % (Fname, idx, NofOus)
+        
+        
         f = open(FileName, "rb")
         Modes = pickle.load(f)
         gTruth = pickle.load(f)
         NofOus = pickle.load(f)
         f.close()
-        
+
+   
         NofNodes = gTruth.shape[0]
         AllV = np.array(list(Modes.values()))
         MV = AllV.mean()
@@ -53,6 +57,7 @@ for NofOus in NOus:
                 MAP = cValue
                 MAPAcc = ComputeAccuracyPas(cLabel, gTruth, NofInliers)
                 MAPLabel = cLabel
+ 
         for key in Modes.keys():
             cLabel = np.fromstring(key, dtype=np.int32)
             cValue = Modes[key]
