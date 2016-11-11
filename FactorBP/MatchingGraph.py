@@ -4,6 +4,7 @@ from FactorGraph import CFactorGraph, intArray, doubleArray, VecInt, VecVecInt
 from sklearn.neighbors import KDTree
 import scipy.io as sio
 import tempfile as tmp
+from scipy.spatial.distance import hamming
 def rand_rotation_matrix(deflection=1.0, randnums=None):
     """
     Creates a random rotation matrix.
@@ -224,11 +225,14 @@ def computeEdgeFeatureSimple(Points, E1, E2):
     return F
 
 
-def ComputeFeatureDistance(F1, F2):
+def ComputeFeatureDistance(F1, F2, dis='L2'):
     res = np.zeros([F1.shape[0], F2.shape[0]])
     for i in range(F1.shape[0]):
         for j in range(F2.shape[0]):
-            res[i][j] = (np.linalg.norm(F1[i] - F2[j]))
+            if(dis == 'L2'):
+                res[i][j] = (np.linalg.norm(F1[i] - F2[j]))
+            elif(dis == 'hamming'):
+                res[i][j] = hamming(F1[i],F2[j])
     return res
 def ComputeMultiAngleDistance(F1,F2):
     res = np.zeros([F1.shape[0], F2.shape[0]])
@@ -252,6 +256,7 @@ def ComputeAngleDistance(F1, F2):
             if(res[i][j] > np.pi):
                 res[i][j] = 2 * np.pi - res[i][j]
     return res
+
 def ComputeKQ(G1, G2, Type):
     NofEdges1 = G1.Edges.shape[0]
     NofEdges2 = G2.Edges.shape[0] * 2
@@ -299,6 +304,7 @@ def ComputeKQ(G1, G2, Type):
                                            np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
         
         KQ = np.exp(-(distTable**2)/2500) * 2
+        
     if(Type == 'syn'):
         distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
                                            np.append(G2.EdgeFeature[:,0],G2.EdgeFeature[:,2]))
@@ -317,6 +323,15 @@ def ComputeKQ(G1, G2, Type):
                 distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
         KQ = np.exp(-(distTable)) * 2
         KQ = np.zeros(distTable.shape)
+    if (Type == 'topo'): # add by Lee at 13:44PM 9th November
+        distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
+                                           np.append(G2.EdgeFeature[:, 0], G2.EdgeFeature[:, 2]))
+        #for i in range(NofEdges1):
+        #    for j in range(G2.Edges.shape[0]):
+        #        distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
+        #        distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
+        # KQ = np.exp(-(distTable)) * 2
+        KQ = np.ones(distTable.shape)
     return KQ
 
 def ComputeKT(G1,G2):
@@ -431,7 +446,11 @@ def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
     return G
 
 def ComputeSimilarity(G1, G2, Type):
-    KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature)
+    if(Type == 'syn'):
+        KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature, dis='hamming')
+    else:
+        KP = ComputeFeatureDistance(G1.PFeature, G2.PFeature)
+
     KQ = ComputeKQ(G1, G2, Type)
     KT = 2 * ComputeKT(G1, G2)
     KP = np.exp(-(KP))

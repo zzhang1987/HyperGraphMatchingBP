@@ -2,6 +2,8 @@ import numpy as np;
 import FactorBP as FB
 from Utils import LoadCar
 from FactorBP.FindNearSol import RunDataMModes
+from FactorBP.DiverseMBest import RunDataSDiverse, RunDataPDiverse
+
 
 def ComputeAccuracyPas(decode, gTruth, NofInliers ):
     Ccnt = 0
@@ -21,6 +23,9 @@ CarData = LoadCar()
 
 NofOus = 5
 idx = 1
+RunDataPDiverse(('Car', CarData, 1, 0, 10, 0.5))
+
+RunDataSDiverse(('Car', CarData, 1, 0, 0.5))
 
 RunDataMModes(('Car', CarData, 1, 0))
 
