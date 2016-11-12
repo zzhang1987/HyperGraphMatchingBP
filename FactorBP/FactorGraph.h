@@ -36,7 +36,7 @@ namespace zzhang{
       * A factor graph; This class is used to do MAP inference over an factor graph.
       */
      class CFactorGraph{
-    	  
+    	  friend class CMdiverseSolver;
      private:
 	  /**
 	   * Number of Nodes;
@@ -128,7 +128,7 @@ namespace zzhang{
 	  }
 	  void AddValue(int i1, int i2, double V){
 	       assert(i1 >= 0 && i1 < m_NofNodes);
-	       assert(i2 >= 0 && i2 < m_NofStates[i2]);
+	       assert(i2 >= 0 && i2 < m_NofStates[i1]);
 	       m_bi[i1][i2] += V;
 	  }
 	  

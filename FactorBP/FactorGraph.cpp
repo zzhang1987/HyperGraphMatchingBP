@@ -213,10 +213,15 @@ void zzhang::CFactorGraph::RunAuction(){
      if(auFactor){
 	  auFactor->Auction();
      }
+     Dual = 0.0;
+
      for(int i = 0; i < m_NofNodes; i++)
      {
 	  m_CurrentDecode[i] = m_NodeFactors[i].m_LocalMax;
+	  Dual += m_bi[i][m_CurrentDecode[i]];
+
      }
+     if(auFactor) Dual += auFactor->SumPrice;
      m_CurrentPrimal = ComputeObj(m_CurrentDecode);
 }
 
@@ -260,7 +265,7 @@ void zzhang::CFactorGraph::UpdateMessages()
      //std::cout << "Dual Here1 " << Dual << std::endl;
      if(auFactor) Dual += auFactor->SumPrice;
 	   
-     //std::cout << "Dual Here2 " << Dual << std::endl;
+     //Std::cout << "Dual Here2 " << Dual << std::endl;
      double Primal = Dual;
      m_PrimalDualGap = std::vector< std::pair<int, double> > (m_Factors.size());
      for(int i = 0; i <m_Factors.size(); i++)
