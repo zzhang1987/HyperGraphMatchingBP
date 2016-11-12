@@ -9,6 +9,7 @@
      #include "Factor.h"
      #include "FactorStore.h"
      #include "FactorGraphStore.h"
+     #include "MDiverseSolver.h"
 %}
 
 %include "numpy.i"
@@ -76,7 +77,7 @@ namespace std{
 %include "FactorGraphStore.h"
 %include "FactorGraph.h"
 %include "Factor.h"
-
+%include "MDiverseSolver.h"
 
 
 

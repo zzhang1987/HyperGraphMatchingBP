@@ -268,14 +268,31 @@ def FindModes(NofNodes, G, X0, delta, MaxIter = 1000):
     
 def FindMModes(NofNodes, G, delta, N, MaxIter = 1000):
     res = dict()
+    
+    DualStore = G.StoreDual()
+
+    resMAP = BSolver.BaBSolver(G, 600, 10, 0.00005, False)
+
+    Diff = 8
+    XMap = resMAP.Decode
+    G.ReStoreDual(DualStore)
     G.Solve(1000)
     DualStore = G.StoreDual()
     G.ResetMax()
     Xarray = FG.intArray(NofNodes)
-
+    
     for i in range(N):
-        X = np.random.permutation(NofNodes)
-        X1 = FindModes(NofNodes, G, X, delta, MaxIter)
+        
+        N1 = np.random.permutation(Diff)
+        N2 = np.random.permutation(NofNodes)
+        PermulatedNodes = N2[0:Diff]
+        PermulatedNodesRes = PermulatedNodes[N1]
+
+        X0 = XMap.copy()
+        X0[PermulatedNodes] = PermulatedNodesRes
+        
+        #X = np.random.permutation(NofNodes)
+        X1 = FindModes(NofNodes, G, X0, delta, MaxIter)
         for i in range(NofNodes):
             Xarray[i] = int(X1[i])
         X1 = np.array(X1, dtype=np.int32)
