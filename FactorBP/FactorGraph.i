@@ -9,6 +9,7 @@
      #include "Factor.h"
      #include "FactorStore.h"
      #include "FactorGraphStore.h"
+     #include "MDiverseSolver.h"
 %}
 
 %include "numpy.i"
@@ -41,6 +42,7 @@ namespace std{
      $result = PyArray_FromDims(1, &length, NPY_INT);
      memcpy(PyArray_DATA((PyArrayObject *) $result),&((*(&$1))[0]),sizeof(int)*length);
  }
+
 
 
 //%typemap(in) (int *decode) {
@@ -76,7 +78,7 @@ namespace std{
 %include "FactorGraphStore.h"
 %include "FactorGraph.h"
 %include "Factor.h"
-
+%include "MDiverseSolver.h"
 
 
 

@@ -21,6 +21,8 @@ from scipy.spatial.distance import hamming
 import cPickle as pickle
 import MatchingGraph as MG
 import FactorGraph as FG
+import HouseUtils as HU
+import time
 
 
 def AdditionOfPhi(NofNodes, gamma, Phi, G):
@@ -194,11 +196,7 @@ def FindBestGamma(NofNodes, G, X0, delta, gamma):
     nGap = np.sort(Gaps)
     deltaGamma = - nGap[delta] + 1e-8
     for i in range(NofNodes):
-        #for j in range(NofNodes):
-        #if(j == X0[i]):
-        #    continue
         G.AddValue(i, int(X0[i]), deltaGamma)
-        #G(i, X0[i]) = G(i, X0[i]) + deltaGamma
     gamma = gamma + deltaGamma
     return gamma
 def FindNearMatching(NofNodes, G, delta, X0, bestv, MaxIter=400):
@@ -212,8 +210,8 @@ def FindNearMatching(NofNodes, G, delta, X0, bestv, MaxIter=400):
         gamma1 = FindBestGamma(NofNodes, G, X0, delta, gamma1)
         gamma2 = FindBestGamma2(NofNodes, G, X0, delta, gamma2)
         G.RunAuction()
-
-        Dual = G.DualValue() - (gamma1 + gamma2) * ( NofNodes - delta)
+        #G.UpdateMessages()
+        Dual = G.DualValue() - (gamma1 + gamma2) * ( NofNodes - delta - 1)
 
         X = G.GetCurrentDecode()
         CV = G.CurrentPrimal()
@@ -268,12 +266,29 @@ def FindModes(NofNodes, G, X0, delta, MaxIter = 1000):
     
 def FindMModes(NofNodes, G, delta, N, MaxIter = 1000):
     res = dict()
+
+    #DualStore = G.StoreDual()
+
+    #resMAP = BSolver.BaBSolver(G, 600, 10, 0.00005, False)
+
+    #Diff = 12
+    #XMap = resMAP.Decode
+    #G.ReStoreDual(DualStore)
     G.Solve(1000)
     DualStore = G.StoreDual()
     G.ResetMax()
     Xarray = FG.intArray(NofNodes)
-
+    
     for i in range(N):
+        
+        #N1 = np.random.permutation(Diff)
+        #N2 = np.random.permutation(NofNodes)
+        #PermulatedNodes = N2[0:Diff]
+        #PermulatedNodesRes = PermulatedNodes[N1]
+
+        #X0 = XMap.copy()
+        #X0[PermulatedNodes] = XMap[PermulatedNodesRes]
+        
         X = np.random.permutation(NofNodes)
         X1 = FindModes(NofNodes, G, X, delta, MaxIter)
         for i in range(NofNodes):
@@ -285,17 +300,37 @@ def FindMModes(NofNodes, G, delta, N, MaxIter = 1000):
 
     return res
 
+def RunDataMModesHouse((Fname, HouseData, ImageI, baseline, NofOus)):
+    MG1, MG2, gTruth = HU.GenerateDataHouse(HouseData, ImageI,
+                                            baseline, NofOus)
+    if MG1 is None:
+        return None
+    N = 300
+    delta = 6
+
+    G, MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
+    start_time = time.time()
+    MModes = FindMModes(30 - NofOus, G, delta, N)
+    time_dur = time.time() - start_time
+
+    Fname = '%s_ID%d_BaseLine%d_NOus%d.pkl' % (Fname, ImageI, baseline, NofOus)
+    
+    f = open(Fname, "w")
+    pickle.dump(MModes, f)
+    pickle.dump(gTruth, f)
+    pickle.dump(NofOus, f)
+    pickle.dump(time_dur, f)
+    f.close()
 
 def RunDataMModes((Fname, data, idx, NofOus)):
     car1 = data[idx]
-    delta = 4
+    delta = 6
     N = 300
     LocalFeature1 = car1['features1']
     LocalFeature2 = car1['features2']
         
     PT1 = LocalFeature1[:, 0:2]
     PT2 = LocalFeature2[:, 0:2]
-    
     
     orientation1 = LocalFeature1[:, 8]
     orientation2 = LocalFeature2[:, 8]
@@ -314,15 +349,16 @@ def RunDataMModes((Fname, data, idx, NofOus)):
     orientation1 = orientation1[gTruth]
     MG1 = MG.MatchingGraph(PT1[0:NofNodes], orientation1[0:NofNodes])
     MG2 = MG.MatchingGraph(PT2[0:NofNodes], orientation2[0:NofNodes])
-    G,MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
-
+    G, MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
+    start_time = time.time()
     MModes = FindMModes(NofNodes, G, delta, N)
-
+    time_dur = time.time() - start_time
     Fname = '%s_ID%d_NOus%d.pkl' % (Fname, idx, NofOus)
     f = open(Fname, "w")
     pickle.dump(MModes, f)
     pickle.dump(gTruth, f)
     pickle.dump(NofOus, f)
+    pickle.dump(time_dur, f)
     f.close()
     
 

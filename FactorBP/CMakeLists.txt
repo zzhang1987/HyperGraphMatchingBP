@@ -29,6 +29,7 @@ SET(LIBSRCS Auction.cpp
 	    Factor.cpp
 	    FactorGraph.cpp
 	    SubTourFactor.cpp
+	    MDiverseSolver.cpp
 	    Auction.h
 	    FactorCreator.h
 	    FactorStore.h
@@ -38,6 +39,7 @@ SET(LIBSRCS Auction.cpp
 	    Factor.h
 	    FactorGraphStore.h
 	    SubTourFactor.h
+	    MDiverseSolver.h
 	    )
 
 set (HEADERS  Auction.h

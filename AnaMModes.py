@@ -4,6 +4,7 @@ import numpy as np
 import scipy.optimize as so
 import scipy.stats as ss
 from scipy.spatial.distance import hamming
+import operator
 
 if(sys.version_info >= (3,0)):
     import _pickle as pickle
@@ -29,8 +30,8 @@ for NofOus in NOus:
     AccuracyMap = np.zeros(len(Index))
     
     for idx in Index:
-        FileName = 'Diverse/%s_ID%d_NOus%d_Delta_0.100000_SDiverse.pkl' % (Fname, idx, NofOus)
-        #FileName = '%s_ID%d_NOus%d.pkl' % (Fname, idx, NofOus)
+        #FileName = 'Diverse/%s_ID%d_NOus%d_Delta_0.100000_SDiverse.pkl' % (Fname, idx, NofOus)
+        FileName = '%s_ID%d_NOus%d.pkl' % (Fname, idx, NofOus)
         
         
         f = open(FileName, "rb")
@@ -38,8 +39,9 @@ for NofOus in NOus:
         gTruth = pickle.load(f)
         NofOus = pickle.load(f)
         f.close()
+        
+        sorted_Modes = sorted(Modes.items(), key=operator.itemgetter(1), reverse=True)
 
-   
         NofNodes = gTruth.shape[0]
         AllV = np.array(list(Modes.values()))
         MV = AllV.mean()
@@ -50,9 +52,16 @@ for NofOus in NOus:
         MAPLabel = 0
         MaxAcc = 0
         MaxAccV = 0
-        for key in Modes.keys():
+        cnt = 0
+        #print(sorted_Modes)
+        for i in range(len(sorted_Modes)):
+            cnt = cnt + 1
+            if(cnt > 10):
+                break
+            key = sorted_Modes[i][0]
+            
             cLabel = np.fromstring(key, dtype=np.int32)
-            cValue = Modes[key]
+            cValue = sorted_Modes[i][1]
             if(cValue > MAP):
                 MAP = cValue
                 MAPAcc = ComputeAccuracyPas(cLabel, gTruth, NofInliers)
@@ -67,6 +76,7 @@ for NofOus in NOus:
                 MaxAccV = cValue
         #print('MAP Accuracy: %f' % MAPAcc)
         #print('Max Accuracy: %f' % MaxAcc)
+        #print('NofModes %d' % len(Modes))
         AccuracyMap[idx - 1] = MAPAcc
         AccuracyMax[idx - 1] = MaxAcc
     MeanAccMap[NofOus] = AccuracyMap.mean()

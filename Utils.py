@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.spatial import Delaunay
 import scipy.io as sio
+import scipy.misc as misc 
 
 
 def computeFeatureSimple(Points, T):
@@ -138,3 +139,12 @@ def LoadMotor():
         res[i] = sio.loadmat(BaseSuffix % i)
 
     return res
+
+
+def LoadHouse():
+    res = np.zeros([111, 30, 2])
+    Imgs = {}
+    for i in range(0, 111):
+        res[i] = np.loadtxt('data/cmum/house/label/house%d' % (i+1))
+        Imgs[i] = misc.imread('data/cmum/house/images/house.seq%d.png' % i)
+    return res, Imgs
