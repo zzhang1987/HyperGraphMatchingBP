@@ -5,7 +5,8 @@ from scipy.spatial.distance import hamming
 import cPickle as pickle
 import MatchingGraph as MG
 import FactorGraph as FG
-
+import HouseUtils as HU
+import time
 
 def SequentialDivMBest(NofNodes, G, delta, N, MaxIter = 1000):
     res = dict()
@@ -31,9 +32,6 @@ def SequentialDivMBest(NofNodes, G, delta, N, MaxIter = 1000):
 
 def ParallelDivMBest(NofNodes, G,  NofSolutions, MaxIter = 1000):
     res = dict()
-
-
-
     for iter in range(MaxIter):
         G.UpdateMessages()
         dual = G.DualValue()
@@ -74,18 +72,68 @@ def RunDataPDiverse((Fname, data, idx, NofOus, NofSolutions, delta)):
     MG1 = MG.MatchingGraph(PT1[0:NofNodes], orientation1[0:NofNodes])
     MG2 = MG.MatchingGraph(PT2[0:NofNodes], orientation2[0:NofNodes])
     G, MFname = MG.ConstructMatchingModelPDiverse(MG1, MG2,
-                                       'pas', False, True, N, delta)
-
+                                                  'pas', False, True, N, delta)
+    start_time = time.time()
     res = ParallelDivMBest(NofNodes, G, N)
+    time_dur = time.time() - start_time
+
     Fname = '%s_ID%d_NOus%d_Delta_%f_PDiverse.pkl' % (Fname, idx, NofOus, delta)
 
     f = open(Fname, "w")
     pickle.dump(res, f)
     pickle.dump(gTruth, f)
     pickle.dump(NofOus, f)
+    pickle.dump(time_dur, f)
     f.close()
 
+    
+def RunDataPDiverseHouse((Fname, HouseData, ImageI,
+                          baseline, NofOus, NofSols, delta)):
+    MG1, MG2, gTruth = HU.GenerateDataHouse(HouseData, ImageI,
+                                            baseline, NofOus)
+    if MG1 is None:
+        return None
 
+    G, MFname = MG.ConstructMatchingModelPDiverse(MG1, MG2,
+                                                  'pas', False,
+                                                  True, NofSols, delta)
+    start_time = time.time()
+    res = ParallelDivMBest(30 - NofOus, G, NofSols)
+    time_dur = time.time() - start_time
+
+    Fname = '%s_ID_%d_BaseLine%d_NOus%d_Delta_%f_PDiverse.pkl' % (Fname, ImageI, baseline, NofOus, delta)
+
+    f = open(Fname, "w")
+    pickle.dump(res, f)
+    pickle.dump(gTruth, f)
+    pickle.dump(NofOus, f)
+    pickle.dump(time_dur, f)
+    f.close()
+
+    
+def RunDataSDiverseHouse((Fname, HouseData, ImageI,
+                          baseline, NofOus, NofSols, delta)):
+    
+    MG1, MG2, gTruth = HU.GenerateDataHouse(HouseData, ImageI,
+                                            baseline, NofOus)
+    if MG1 is None:
+        return None
+    G, MFname = MG.ConstructMatchingModel(MG1, MG2,
+                                          'cmu', True, False)
+    start_time = time.time()
+    MDiverse = SequentialDivMBest(30 - NofOus, G, delta, NofSols)
+    time_dur = time.time() - start_time
+
+    Fname = '%s_ID_%d_BaseLine%d_NOus%d_Delta_%f_SDiverse.pkl' % (Fname, ImageI, baseline, NofOus, delta)
+
+    f = open(Fname, "w")
+    pickle.dump(MDiverse, f)
+    pickle.dump(gTruth, f)
+    pickle.dump(NofOus, f)
+    pickle.dump(time_dur, f)
+    f.close()
+
+    
 def RunDataSDiverse((Fname, data, idx, NofOus, delta)):
     car1 = data[idx]
     N = 10
@@ -113,9 +161,10 @@ def RunDataSDiverse((Fname, data, idx, NofOus, delta)):
     orientation1 = orientation1[gTruth]
     MG1 = MG.MatchingGraph(PT1[0:NofNodes], orientation1[0:NofNodes])
     MG2 = MG.MatchingGraph(PT2[0:NofNodes], orientation2[0:NofNodes])
-    G,MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
-    
+    G, MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
+    start_time = time.time()
     MDiverse = SequentialDivMBest(NofNodes, G, delta, N)
+    time_dur = time.time() - start_time
     
     Fname = '%s_ID%d_NOus%d_Delta_%f_SDiverse.pkl' % (Fname, idx, NofOus, delta)
 
@@ -123,5 +172,6 @@ def RunDataSDiverse((Fname, data, idx, NofOus, delta)):
     pickle.dump(MDiverse, f)
     pickle.dump(gTruth, f)
     pickle.dump(NofOus, f)
+    pickle.dump(time_dur, f)
     f.close()
 
