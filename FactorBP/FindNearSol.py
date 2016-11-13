@@ -199,7 +199,7 @@ def FindBestGamma(NofNodes, G, X0, delta, gamma):
         G.AddValue(i, int(X0[i]), deltaGamma)
     gamma = gamma + deltaGamma
     return gamma
-def FindNearMatching(NofNodes, G, delta, X0, bestv, MaxIter=800):
+def FindNearMatching(NofNodes, G, delta, X0, bestv, MaxIter=400):
     G.ResetMax()
     gamma1 = 0
     gamma2 = 0
@@ -324,7 +324,7 @@ def RunDataMModesHouse((Fname, HouseData, ImageI, baseline, NofOus)):
 
 def RunDataMModes((Fname, data, idx, NofOus)):
     car1 = data[idx]
-    delta = 3
+    delta = 6
     N = 300
     LocalFeature1 = car1['features1']
     LocalFeature2 = car1['features2']

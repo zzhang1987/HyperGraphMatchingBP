@@ -1,5 +1,5 @@
 import matlab.engine
-eng = matlab.engine.start_matlab()
+#eng = matlab.engine.start_matlab()
 #import matlab.engine
 import numpy as np;
 from sklearn.neighbors import KDTree
@@ -8,12 +8,13 @@ from scipy.spatial import Delaunay
 import scipy.io as sio
 from Utils import *
 import time
-
+import matplotlib
+matplotlib.use('svg')
 import matplotlib.pyplot as plt
 import matplotlib
 import pylab
 
-
+eng = matlab.engine.start_matlab()
 def ComputeAccuracyPas(decode, gTruth, NofInliers ):
     Ccnt = 0
     for i in range(len(gTruth)):
@@ -83,13 +84,12 @@ for NofOus in range(0,MaxNofOus+1):
         res1 = FB.BaBSolver(G, 100, 10, 0.005, False)
         res2 = FB.BaBSolver(G2, 100, 10, 0.005, False)
 
-
+	resTM = eng.runTensorMatching(nargout=3)
         resBag = eng.runBcagm(nargout=3)
         resBagMP = eng.runBcagmQuad1(1,nargout=3)
         resBagIPFP = eng.runBcagmQuad1(2,nargout=3)
         resHGM = eng.runHGM(nargout=3)
         resRRWHM = eng.runRRWHM(nargout=3)
-        resTM = eng.runTensorMatching(nargout=3)
         
         
         
