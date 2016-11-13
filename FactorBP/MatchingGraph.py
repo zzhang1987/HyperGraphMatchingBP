@@ -52,7 +52,7 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
 def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     MaxSize = 100
     PT1 = np.random.rand(NofInliers, 3) * MaxSize
-    PT1[:,2] /= 50
+    PT1[:,2] *= 0
 
     #PT1Homo = np.append(PT1, np.ones([NofInliers, 1]), axis = 1)
 
@@ -104,9 +104,10 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     PT2 = PT2 + N * Noise * Scale
 
 
-    Ous1 = np.random.rand(NofOutliers, 2) * MaxSize 
-    Ous2 = np.random.rand(NofOutliers, 2) * MaxSize * Scale 
+    Ous1 = np.random.rand(NofOutliers, 2) * MaxSize * 2
+    Ous2 = np.random.rand(NofOutliers, 2) * MaxSize * 2 * Scale
     PT1 = PT1[:,0:2]
+    PT1[:,0] *= 0.8
     PT11 = np.append(PT1, Ous1, axis = 0)
     PT22 = np.append(PT2, Ous2, axis = 0)
     
@@ -423,7 +424,6 @@ def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
         for xij in range(KQ.shape[1]):
             CurrentNNZV[xij] = KQ[ei][xij]
         G.AddGenericGenericSparseFactor(CEdgeVec, nnzEdgeIdx, CurrentNNZV)
-
 
     for ti in range(distT.shape[0]):
         CTripletsVec = VecInt(3)
