@@ -2,7 +2,7 @@ import numpy as np;
 import FactorBP as FB
 from Utils import LoadCar, LoadHouse
 from FactorBP.FindNearSol import RunDataMModes, RunDataMModesHouse
-from FactorBP.DiverseMBest import RunDataSDiverse, RunDataPDiverse, RunDataSDiverseHouse, RunDataPDiverseHouse
+from FactorBP.DiverseMBest import RunDataSDiverse, RunDataPDiverse, RunDataSDiverseHouse, 
 
 
 def ComputeAccuracyPas(decode, gTruth, NofInliers ):
