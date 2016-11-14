@@ -50,9 +50,9 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
 
 
 def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
-    MaxSize = 100
+    MaxSize = 1000
     PT1 = np.random.rand(NofInliers, 3) * MaxSize
-    PT1[:,2] /= 50
+    #PT1[:,2] *= 0
 
     #PT1Homo = np.append(PT1, np.ones([NofInliers, 1]), axis = 1)
 
@@ -62,8 +62,8 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     TransMat2 = np.zeros([3,3]);
     TransMat3 = np.zeros([3,3]);
 
-    theta1 = (np.random.rand() - 0.5) * 0
-    theta2 = (np.random.rand() - 0.5) * 0
+    theta1 = np.random.rand() * np.pi
+    theta2 = np.random.rand() * np.pi
     
     TransMat1[1][1] = 1
     TransMat1[0][0] = np.cos(theta1)
@@ -95,18 +95,19 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     #TransMat[1][0] = np.sin(theta) * Scale
     #TransMat[1][1] = np.cos(theta) * Scale
     print(TransMat)
-    PT2Trans = TransMat.dot(PT1Homo) #+ Noise * np.random.rand(3, NofInliers)
+    PT2Trans = TransMat.dot(PT1Homo) + Noise * np.random.rand(3, NofInliers)
     PT2Homo = PT2Trans.transpose()
-    PT2 = PT2Homo[:,0:2]
+    #PT2 = PT2Homo[:,0:2]
     theta3 = np.random.rand(NofInliers,1) * np.pi * 2
-    N = np.append(np.cos(theta3), np.sin(theta3), axis=1)
-
-    PT2 = PT2 + N * Noise * Scale
 
 
-    Ous1 = np.random.rand(NofOutliers, 2) * MaxSize 
-    Ous2 = np.random.rand(NofOutliers, 2) * MaxSize * Scale 
-    PT1 = PT1[:,0:2]
+    PT2 = PT2Homo
+
+
+    Ous1 = np.random.rand(NofOutliers, 3) * MaxSize * 2
+    Ous2 = np.random.rand(NofOutliers, 3) * MaxSize * 2 * Scale
+    #PT1 = PT1[:,0:2]
+    #PT1[:,0] *= 0.8
     PT11 = np.append(PT1, Ous1, axis = 0)
     PT22 = np.append(PT2, Ous2, axis = 0)
     
@@ -390,7 +391,7 @@ def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
         TF2[ti] = computeTripletsFeatureSinAlpha(G2.P, T2[ti])
 
     kdt = KDTree(TF2, metric='euclidean')
-    nNN = T.shape[0] * 2
+    nNN = T.shape[0]
     [distT, indicesT] = kdt.query(TF1, k=nNN, return_distance=True)
     distT = np.exp(- (distT / np.mean(distT) ))
     KP = np.exp(-KP)
@@ -423,7 +424,6 @@ def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
         for xij in range(KQ.shape[1]):
             CurrentNNZV[xij] = KQ[ei][xij]
         G.AddGenericGenericSparseFactor(CEdgeVec, nnzEdgeIdx, CurrentNNZV)
-
 
     for ti in range(distT.shape[0]):
         CTripletsVec = VecInt(3)

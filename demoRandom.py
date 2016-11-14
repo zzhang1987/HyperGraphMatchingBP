@@ -52,6 +52,9 @@ for deg in range(90,190,10):
         MG2 = FB.MatchingGraph(PT2[0:NofNodes], PF2[0:NofNodes])
 
         G = FB.ConstructMatchingModel(MG1, MG2, 'syn', True)
+        G = FB.ConstructMatchingModelRandom(MG1, MG2, 'syn', True)
+
+
         G2 = FB.ConstructMatchingModel(MG1, MG2, 'syn', False)
         Gvis = FB.ConstructMatchingModel(MG1, MG2, 'syn', True)
         G.SetVerbose(False)
