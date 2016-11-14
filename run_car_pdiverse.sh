@@ -5,4 +5,4 @@
 #SBATCH --ntasks=32         # Job will consist of only one process
 #SBATCH --cpus-per-task=1   # Number of CPUs per process (for multithreaded programs)
 #SBATCH --mem=48GB           # Memory requested per nod#!/bin/sh
-python RuPDiverseCar.py 2> Error.log
+python RuPDiverseCar.py 2> PDivError.log

@@ -5,7 +5,7 @@ import numpy
 
 
 FactorGraph_module = Extension('FactorBP._FactorGraph',
-                            sources=['FactorBP/FactorGraph.i','FactorBP/FactorGraph.cpp', 'FactorBP/FactorCreator.cpp', 'FactorBP/Factor.cpp', 'FactorBP/Auction.cpp', 'FactorBP/SubTourFactor.cpp'],
+                            sources=['FactorBP/FactorGraph.i','FactorBP/FactorGraph.cpp', 'FactorBP/FactorCreator.cpp', 'FactorBP/Factor.cpp', 'FactorBP/Auction.cpp', 'FactorBP/SubTourFactor.cpp', 'FactorBP/MDiverseSolver.cpp'],
                             swig_opts=['-modern','-c++','-I./FactorBP'],
                             extra_compile_args=['-O3','-DPERFECT_MATCHING_DOUBLE', '-std=c++11','-DPERFECT_MATCHING_DOUBLE', '-ffast-math', '-pipe', '-fomit-frame-pointer', '-std=c++11'],
                             include_dirs=[numpy.get_include()],

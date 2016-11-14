@@ -35,7 +35,7 @@ def ParallelDivMBest(NofNodes, G,  NofSolutions, MaxIter = 1000):
     for iter in range(MaxIter):
         G.UpdateMessages()
         dual = G.DualValue()
-        print("Iter = %d, Dual = %f " % (iter, dual))
+        #print("Iter = %d, Dual = %f " % (iter, dual))
     FinalDecode = G.GetDecode()
     for i in range(NofSolutions):
         res[i] = np.zeros(NofNodes, dtype=np.int32)

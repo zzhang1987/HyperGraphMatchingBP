@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH --job-name=demo_modes    # Job name for easy identification in queue
+#SBATCH --job-name=motor_sdiverse    # Job name for easy identification in queue
 #SBATCH --time=72:00:00      # Time requested (HH:MM:SS, or DAYS-HH:MM:SS)
 #SBATCH --nodes=1           # Request a single node only
 #SBATCH --ntasks=32         # Job will consist of only one process
