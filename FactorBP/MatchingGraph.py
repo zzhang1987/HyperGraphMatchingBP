@@ -1,6 +1,6 @@
 from scipy.spatial import Delaunay
 import numpy as np
-from FactorGraph import CFactorGraph, CMdiverseSolver, intArray, doubleArray, VecInt, VecVecInt
+from FactorGraph import CFactorGraph, intArray, doubleArray, VecInt, VecVecInt
 from sklearn.neighbors import KDTree
 import scipy.io as sio
 import tempfile as tmp
@@ -51,33 +51,15 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
 
 def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     MaxSize = 1000
-    PT1 = np.random.rand(NofInliers, 3) * MaxSize
+    PT1 = np.random.rand(NofInliers, 2) * MaxSize
     #PT1[:,2] *= 0
 
     #PT1Homo = np.append(PT1, np.ones([NofInliers, 1]), axis = 1)
 
     PT1Homo = PT1.transpose()
 
-    TransMat1 = np.zeros([3,3]);
-    TransMat2 = np.zeros([3,3]);
-    TransMat3 = np.zeros([3,3]);
-
-    theta1 = np.random.rand() * np.pi
-    theta2 = np.random.rand() * np.pi
     
-    TransMat1[1][1] = 1
-    TransMat1[0][0] = np.cos(theta1)
-    TransMat1[0][2] = -np.sin(theta1)
-    TransMat1[2][0] = np.sin(theta1)
-    TransMat1[2][2] = np.cos(theta1)
-
-    TransMat2[0][0] = 1
-    TransMat2[1][1] = np.cos(theta2)
-    TransMat2[1][2] = -np.sin(theta2)
-    TransMat2[2][1] = np.sin(theta2)
-    TransMat2[2][2] = np.cos(theta2)
-
-    TransMat3[2][2] = 1
+    TransMat3 = np.zeros([2, 2])
     TransMat3[0][0] = np.cos(theta)
     TransMat3[0][1] = -np.sin(theta)
     TransMat3[1][0] = np.sin(theta)
@@ -86,7 +68,7 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
 
     
 
-    TransMat = Scale * (TransMat1.dot(TransMat2)).dot(TransMat3)
+    TransMat = Scale * TransMat3
     #TransMat = rand_rotation_matrix()
     #TransMat[2][2] = 1
 
@@ -95,17 +77,15 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     #TransMat[1][0] = np.sin(theta) * Scale
     #TransMat[1][1] = np.cos(theta) * Scale
     print(TransMat)
-    PT2Trans = TransMat.dot(PT1Homo) + Noise * np.random.rand(3, NofInliers)
+    PT2Trans = TransMat.dot(PT1Homo) + np.random.normal(0, Noise, [2, NofInliers]) #Noise * np.random.rand(2, NofInliers)
     PT2Homo = PT2Trans.transpose()
     #PT2 = PT2Homo[:,0:2]
-    theta3 = np.random.rand(NofInliers,1) * np.pi * 2
-
 
     PT2 = PT2Homo
 
 
-    Ous1 = np.random.rand(NofOutliers, 3) * MaxSize * 4
-    Ous2 = np.random.rand(NofOutliers, 3) * MaxSize * 4 * Scale
+    Ous1 = np.random.rand(NofOutliers, 2) * MaxSize * 4
+    Ous2 = np.random.rand(NofOutliers, 2) * MaxSize * 4 * Scale
     #PT1 = PT1[:,0:2]
     #PT1[:,0] *= 0.8
     PT11 = np.append(PT1, Ous1, axis = 0)
@@ -323,7 +303,7 @@ def ComputeKQ(G1, G2, Type):
                 distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
                 distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
         KQ = np.exp(-(distTable)) * 2
-        KQ = np.zeros(distTable.shape)
+        KQ = np.ones(distTable.shape)
     if (Type == 'topo'): # add by Lee at 13:44PM 9th November
         distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
                                            np.append(G2.EdgeFeature[:, 0], G2.EdgeFeature[:, 2]))
@@ -337,7 +317,7 @@ def ComputeKQ(G1, G2, Type):
 
 def ComputeKT(G1,G2):
     distTable = ComputeMultiAngleDistance(G1.TFeature, G2.PTFeature)
-    KT = np.exp(-distTable/2 * np.pi)
+    KT = np.exp(-distTable/np.mean(distTable) )
     return KT
 
 def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
@@ -454,119 +434,11 @@ def ComputeSimilarity(G1, G2, Type):
     KQ = ComputeKQ(G1, G2, Type)
     KT = 2 * ComputeKT(G1, G2)
     KP = np.exp(-(KP))
-    return KP, KQ, KT
+    return KP,KQ,KT
 
-
-def ConstructMatchingModelPDiverse(G1, G2, Type,
-                                   AddTriplet=True,
-                                   AddEdge=True,
-                                   NofSolvers=10,
-                                   Lambda=0.1):
-    KP, KQ, KT = ComputeSimilarity(G1, G2, Type)
-    NofNodes = G1.NofNodes
-    G = CMdiverseSolver(NofNodes, NofSolvers, Lambda)
-    bi = doubleArray(NofNodes)
-    for ni in range(NofNodes):
-        for xi in range(NofNodes):
-            bi[xi] = float(KP[ni][xi])
-        G.AddNodeBelief(ni, bi)
-    # NNZEdge & NNZTrip?
-    nnzEdgeIdx = VecVecInt(KQ.shape[1])
-    
-    for ni in range(G2.Edges.shape[0]):
-        CurrentAssign = VecInt(2)
-        CurrentAssign[0] = int(G2.Edges[ni][0])
-        CurrentAssign[1] = int(G2.Edges[ni][1])
-        InvCurrentAssign = VecInt(2)
-        InvCurrentAssign[0] = int(G2.Edges[ni][1])
-        InvCurrentAssign[1] = int(G2.Edges[ni][0])
-        nnzEdgeIdx[ni] = CurrentAssign
-        nnzEdgeIdx[ni + G2.Edges.shape[0]] = InvCurrentAssign
-
-    nnzTripIdx = VecVecInt(KT.shape[1])
-    for ni in range(KT.shape[1]):
-        CurrentAssign = VecInt(3)
-        CurrentAssign[0] = int(G2.PermunatedTriplets[ni][0])
-        CurrentAssign[1] = int(G2.PermunatedTriplets[ni][1])
-        CurrentAssign[2] = int(G2.PermunatedTriplets[ni][2])
-        nnzTripIdx[ni] = CurrentAssign
-    # Save Matching Model as Temp.mat
-    MatRes = {}
-    TmpFName = tmp.mktemp(suffix='.mat')
-    if AddTriplet:
-        MatRes['Triplets'] = G1.Triplets
-        MatRes['NTriplets'] = G2.PermunatedTriplets
-        MatRes['Similarity'] = KT
-    if AddEdge:
-        # MatRes['P1'] = G1.P
-        # MatRes['P2'] = G2.P
-        MatRes['Edges'] = G1.Edges
-        MatRes['NEdges'] = G2.Edges
-        MatRes['KQ'] = KQ
-    MatRes['KP'] = KP
-    MatRes['GT'] = range(NofNodes)    
-    sio.savemat(TmpFName, MatRes)
-    
-
-    # Edges
-    if AddEdge:
-        NNZs = KQ.shape[1]
-        nnzIdx = intArray(2 * NNZs)
-        for j in range(G2.Edges.shape[0]):
-            xi = G2.Edges[j][0]
-            xj = G2.Edges[j][1]
-            nnzIdx[2 * j] = int(xi)
-            nnzIdx[2 * j + 1] = int(xj)
-        baseIdx = 2 * G2.Edges.shape[0]
-        for j in range(G2.Edges.shape[0]):
-            xi = G2.Edges[j][1]
-            xj = G2.Edges[j][0]
-            nnzIdx[baseIdx + 2 * j] = int(xi)
-            nnzIdx[baseIdx + 2 * j + 1] = int(xj)
-
-        mi = doubleArray(NofNodes);
-        mj = doubleArray(NofNodes);
-        for i in range(NofNodes):
-            mi[i] = 0
-            mj[i] = 0
-        for ei in range(KQ.shape[0]):
-            EPotentials = doubleArray(NofNodes * NofNodes)
-            for xij in range(NofNodes * NofNodes):
-                EPotentials[xij] = 0;
-            cei = G1.Edges[ei][0]
-            cej = G1.Edges[ei][1]
-            CEdgeVec = VecInt(2)
-            CEdgeVec[0] = int(G1.Edges[ei][0])
-            CEdgeVec[1] = int(G1.Edges[ei][1])
-            CurrentNNZV = doubleArray(KQ.shape[1])
-            for xij in range(KQ.shape[1]):
-                rxij = int(nnzIdx[2 * xij] * NofNodes + nnzIdx[2 * xij + 1])
-                EPotentials[rxij] = KQ[ei][xij]
-                CurrentNNZV[xij] = KQ[ei][xij]
-            #G.AddGenericGenericSparseFactor(CEdgeVec, nnzEdgeIdx, CurrentNNZV)
-            G.AddSparseEdgeNZ(cei, cej, EPotentials, mi, mj, NNZs, nnzIdx)
-
-    # Triplet
-    if AddTriplet:
-        for ti in range(KT.shape[0]):
-        #for ti in range(0):
-            CTripletsVec = VecInt(3)
-            CTripletsVec[0] = int(G1.Triplets[ti][0])
-            CTripletsVec[1] = int(G1.Triplets[ti][1])
-            CTripletsVec[2] = int(G1.Triplets[ti][2])
-            CurrentNNZV = doubleArray(KT.shape[1])
-            for xijk in range(KT.shape[1]):
-                CurrentNNZV[xijk] = KT[ti][xijk]
-            G.AddGenericGenericSparseFactor(CTripletsVec, nnzTripIdx, CurrentNNZV)
-
-    G.AddAuctionFactor()
-    
-    return G, TmpFName;
-
-    
 # Modifyed by Lee at 12:34PM 4th November
 def ConstructMatchingModel(G1, G2, Type, AddTriplet = True, AddEdge = True):
-    KP, KQ, KT = ComputeSimilarity(G1, G2, Type)
+    KP,KQ,KT = ComputeSimilarity(G1,G2,Type)
     NofNodes = G1.NofNodes
     NofStates = intArray(NofNodes)
     for i in range(NofNodes):
