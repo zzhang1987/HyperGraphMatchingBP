@@ -8,15 +8,27 @@ import FactorGraph as FG
 import HouseUtils as HU
 import time
 
-def SequentialDivMBest(NofNodes, G, delta, N, MaxIter = 1000):
+
+def ComputeAccuracyPas(decode, gTruth, NofInliers):
+    Ccnt = 0
+    for i in range(len(gTruth)):
+        if((decode[i] == gTruth[i]) and (gTruth[i] < NofInliers)):
+            Ccnt += 1
+    return 1.0 * Ccnt / NofInliers
+
+
+def SequentialDivMBest(NofNodes, G, delta, N,
+                       MaxIter=1000, gTruth=None, NofInliers=None):
     res = dict()
     G.Solve(1000)
     DualStore = G.StoreDual()
     G.ResetMax()
     Xarray = FG.intArray(NofNodes)
+    CurrentAccuracy = 0
+    CV = 0
     for i in range(N):
-        G.Solve(1000)
         G.ResetMax()
+        G.Solve(1000)
         X = G.GetDecode()
         for j in range(NofNodes):
             Xarray[j] = int(X[j])
@@ -24,13 +36,21 @@ def SequentialDivMBest(NofNodes, G, delta, N, MaxIter = 1000):
         T = G.StoreDual()
         G.ReStoreDual(DualStore)
         v = G.ComputeObj(Xarray)
+        if(gTruth is not None and NofInliers is not None):
+            CA = ComputeAccuracyPas(X, gTruth, NofInliers)
+            if(CA > CurrentAccuracy):
+                CurrentAccuracy = CA
+                CV = v
+            print('Iter = %d, Accuracy = %f, CA = %f, CV = %f' % (i,
+                                                                  CurrentAccuracy, CA, v))
+        
         res[X1.tostring()] = v
         G.ReStoreDual(T)
         for i in range(NofNodes):
             G.AddValue(i, int(X[i]), -delta)
     return res
 
-def ParallelDivMBest(NofNodes, G,  NofSolutions, MaxIter = 1000):
+def ParallelDivMBest(NofNodes, G,  NofSolutions, MaxIter = 10000):
     res = dict()
     for iter in range(MaxIter):
         G.UpdateMessages()
@@ -121,7 +141,8 @@ def RunDataSDiverseHouse((Fname, HouseData, ImageI,
     G, MFname = MG.ConstructMatchingModel(MG1, MG2,
                                           'cmu', True, False)
     start_time = time.time()
-    MDiverse = SequentialDivMBest(30 - NofOus, G, delta, NofSols)
+    MDiverse = SequentialDivMBest(30 - NofOus, G, delta,
+                                  NofSols)
     time_dur = time.time() - start_time
 
     Fname = '%s_ID_%d_BaseLine%d_NOus%d_Delta_%f_SDiverse.pkl' % (Fname, ImageI, baseline, NofOus, delta)
@@ -136,7 +157,7 @@ def RunDataSDiverseHouse((Fname, HouseData, ImageI,
     
 def RunDataSDiverse((Fname, data, idx, NofOus, delta)):
     car1 = data[idx]
-    N = 10
+    N = 100
     LocalFeature1 = car1['features1']
     LocalFeature2 = car1['features2']
         
@@ -163,7 +184,8 @@ def RunDataSDiverse((Fname, data, idx, NofOus, delta)):
     MG2 = MG.MatchingGraph(PT2[0:NofNodes], orientation2[0:NofNodes])
     G, MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
     start_time = time.time()
-    MDiverse = SequentialDivMBest(NofNodes, G, delta, N)
+    MDiverse = SequentialDivMBest(NofNodes, G, delta, N, gTruth=gTruth,
+                                  NofInliers=NofInliers)
     time_dur = time.time() - start_time
     
     Fname = '%s_ID%d_NOus%d_Delta_%f_SDiverse.pkl' % (Fname, idx, NofOus, delta)

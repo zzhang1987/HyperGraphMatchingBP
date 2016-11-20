@@ -104,8 +104,8 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     PT2 = PT2Homo
 
 
-    Ous1 = np.random.rand(NofOutliers, 3) * MaxSize * 2
-    Ous2 = np.random.rand(NofOutliers, 3) * MaxSize * 2 * Scale
+    Ous1 = np.random.rand(NofOutliers, 3) * MaxSize * 4
+    Ous2 = np.random.rand(NofOutliers, 3) * MaxSize * 4 * Scale
     #PT1 = PT1[:,0:2]
     #PT1[:,0] *= 0.8
     PT11 = np.append(PT1, Ous1, axis = 0)

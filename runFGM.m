@@ -3,7 +3,7 @@ load(Fname);
 global footpath;
 %delete(gcp)
 %parpool
-footpath = '/Users/zzhang/Inference/code/HungarianBP/';
+footpath = '/Users/zhen/Inference/code/';
 footpath = strcat(footpath,'/fgm');
 rng(45678);
 

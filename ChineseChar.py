@@ -2,8 +2,8 @@ import scipy.io as sio
 # import cv2
 import numpy as np
 import numpy.matlib
-from FactorGraph import *
-
+from FactorBP import *
+from FactorBP.FactorGraph import *
 
 def ComputeDistAng(Edges, Pt):
     eps = 2.2204e-16

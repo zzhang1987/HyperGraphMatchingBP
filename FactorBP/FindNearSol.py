@@ -24,6 +24,12 @@ import FactorGraph as FG
 import HouseUtils as HU
 import time
 
+def ComputeAccuracyPas(decode, gTruth, NofInliers):
+    Ccnt = 0
+    for i in range(len(gTruth)):
+        if((decode[i] == gTruth[i]) and (gTruth[i] < NofInliers)):
+            Ccnt += 1
+    return 1.0 * Ccnt / NofInliers
 
 def AdditionOfPhi(NofNodes, gamma, Phi, G):
     bi = FG.doubleArray(NofNodes)
@@ -264,7 +270,8 @@ def FindModes(NofNodes, G, X0, delta, MaxIter = 1000):
     return X1
     
     
-def FindMModes(NofNodes, G, delta, N, MaxIter = 1000):
+def FindMModes(NofNodes, G, delta, N,
+               MaxIter=1000, gTruth=None, NofInliers=None):
     res = dict()
 
     #DualStore = G.StoreDual()
@@ -278,7 +285,8 @@ def FindMModes(NofNodes, G, delta, N, MaxIter = 1000):
     DualStore = G.StoreDual()
     G.ResetMax()
     Xarray = FG.intArray(NofNodes)
-    
+    CurrentAccuracy = 0
+    CV = 0
     for i in range(N):
         
         #N1 = np.random.permutation(Diff)
@@ -291,12 +299,23 @@ def FindMModes(NofNodes, G, delta, N, MaxIter = 1000):
         
         X = np.random.permutation(NofNodes)
         X1 = FindModes(NofNodes, G, X, delta, MaxIter)
-        for i in range(NofNodes):
-            Xarray[i] = int(X1[i])
+        
+        for xi in range(NofNodes):
+            Xarray[xi] = int(X1[xi])
         X1 = np.array(X1, dtype=np.int32)
+        #if(gTruth is not None and NofInliers is not None):
+        #    print('Iter = %d, Accuracy = %f' % (i,
+        #                                        ComputeAccuracyPas(X1, gTruth, NofInliers)))
         G.ReStoreDual(DualStore)
         v = G.ComputeObj(Xarray)
         res[X1.tostring()] = v
+        if(gTruth is not None and NofInliers is not None):
+            acc = ComputeAccuracyPas(X1, gTruth, NofInliers)
+            if(acc > CurrentAccuracy):
+                CurrentAccuracy = acc
+                CV = v
+            print('Iter = %d, Accuracy = %f, CA = %f, CV = %f' % (i,
+                                                                  CurrentAccuracy, acc, v))
 
     return res
 
@@ -306,7 +325,7 @@ def RunDataMModesHouse((Fname, HouseData, ImageI, baseline, NofOus)):
     if MG1 is None:
         return None
     N = 300
-    delta = 6
+    delta = 10
 
     G, MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
     start_time = time.time()
@@ -351,7 +370,7 @@ def RunDataMModes((Fname, data, idx, NofOus)):
     MG2 = MG.MatchingGraph(PT2[0:NofNodes], orientation2[0:NofNodes])
     G, MFname = MG.ConstructMatchingModel(MG1, MG2, 'pas', False, True)
     start_time = time.time()
-    MModes = FindMModes(NofNodes, G, delta, N)
+    MModes = FindMModes(NofNodes, G, delta, N, gTruth=gTruth, NofInliers=NofInliers)
     time_dur = time.time() - start_time
     Fname = '%s_ID%d_NOus%d.pkl' % (Fname, idx, NofOus)
     f = open(Fname, "w")
