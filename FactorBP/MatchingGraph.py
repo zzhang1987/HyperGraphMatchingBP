@@ -51,33 +51,15 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
 
 def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     MaxSize = 1000
-    PT1 = np.random.rand(NofInliers, 3) * MaxSize
+    PT1 = np.random.rand(NofInliers, 2) * MaxSize
     #PT1[:,2] *= 0
 
     #PT1Homo = np.append(PT1, np.ones([NofInliers, 1]), axis = 1)
 
     PT1Homo = PT1.transpose()
 
-    TransMat1 = np.zeros([3,3]);
-    TransMat2 = np.zeros([3,3]);
-    TransMat3 = np.zeros([3,3]);
-
-    theta1 = np.random.rand() * np.pi
-    theta2 = np.random.rand() * np.pi
     
-    TransMat1[1][1] = 1
-    TransMat1[0][0] = np.cos(theta1)
-    TransMat1[0][2] = -np.sin(theta1)
-    TransMat1[2][0] = np.sin(theta1)
-    TransMat1[2][2] = np.cos(theta1)
-
-    TransMat2[0][0] = 1
-    TransMat2[1][1] = np.cos(theta2)
-    TransMat2[1][2] = -np.sin(theta2)
-    TransMat2[2][1] = np.sin(theta2)
-    TransMat2[2][2] = np.cos(theta2)
-
-    TransMat3[2][2] = 1
+    TransMat3 = np.zeros([2, 2])
     TransMat3[0][0] = np.cos(theta)
     TransMat3[0][1] = -np.sin(theta)
     TransMat3[1][0] = np.sin(theta)
@@ -86,7 +68,7 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
 
     
 
-    TransMat = Scale * (TransMat1.dot(TransMat2)).dot(TransMat3)
+    TransMat = Scale * TransMat3
     #TransMat = rand_rotation_matrix()
     #TransMat[2][2] = 1
 
@@ -95,17 +77,15 @@ def GenRandomMatchingPoints(NofInliers, Scale,  Noise, NofOutliers, theta = 0):
     #TransMat[1][0] = np.sin(theta) * Scale
     #TransMat[1][1] = np.cos(theta) * Scale
     print(TransMat)
-    PT2Trans = TransMat.dot(PT1Homo) + Noise * np.random.rand(3, NofInliers)
+    PT2Trans = TransMat.dot(PT1Homo) + np.random.normal(0, Noise, [2, NofInliers]) #Noise * np.random.rand(2, NofInliers)
     PT2Homo = PT2Trans.transpose()
     #PT2 = PT2Homo[:,0:2]
-    theta3 = np.random.rand(NofInliers,1) * np.pi * 2
-
 
     PT2 = PT2Homo
 
 
-    Ous1 = np.random.rand(NofOutliers, 3) * MaxSize * 2
-    Ous2 = np.random.rand(NofOutliers, 3) * MaxSize * 2 * Scale
+    Ous1 = np.random.rand(NofOutliers, 2) * MaxSize * 4
+    Ous2 = np.random.rand(NofOutliers, 2) * MaxSize * 4 * Scale
     #PT1 = PT1[:,0:2]
     #PT1[:,0] *= 0.8
     PT11 = np.append(PT1, Ous1, axis = 0)
@@ -323,7 +303,7 @@ def ComputeKQ(G1, G2, Type):
                 distTable[i][j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][0]]) + 1e-6)
                 distTable[i][G2.Edges.shape[0] + j] /= (np.min([G1.EdgeFeature[i][0], G2.EdgeFeature[j][2]]) + 1e-6)
         KQ = np.exp(-(distTable)) * 2
-        KQ = np.zeros(distTable.shape)
+        KQ = np.ones(distTable.shape)
     if (Type == 'topo'): # add by Lee at 13:44PM 9th November
         distTable = ComputeFeatureDistance(G1.EdgeFeature[:, 0],
                                            np.append(G2.EdgeFeature[:, 0], G2.EdgeFeature[:, 2]))
@@ -337,7 +317,7 @@ def ComputeKQ(G1, G2, Type):
 
 def ComputeKT(G1,G2):
     distTable = ComputeMultiAngleDistance(G1.TFeature, G2.PTFeature)
-    KT = np.exp(-distTable/2 * np.pi)
+    KT = np.exp(-distTable/np.mean(distTable) )
     return KT
 
 def ConstructMatchingModelRandom(G1, G2, Type, AddTriplet):
