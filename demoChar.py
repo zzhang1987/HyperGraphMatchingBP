@@ -12,6 +12,7 @@ import time
 import matplotlib
 import multiprocessing as mp
 from itertools import product
+from scipy.optimize import linear_sum_assignment
 
 # matplotlib.use('Agg')
 # import matplotlib.pyplot as plt
@@ -107,17 +108,51 @@ for idx in range(4):
             I2 = np.array(data2['I'])
             Pt2 = np.array(data2['Pt'])
 
-            G = ConstructSparseG(G1, Pt1, G2, Pt2)
-            start_time = time.time()
-            MModes = FindMModes(Pt1.shape[0], G, delta, N)
-            time_dur = time.time() - start_time
-            G = ConstructSparseG(G1, Pt1, G2, Pt2)
+            #G = ConstructSparseG(G1, Pt1, G2, Pt2)
+            #start_time = time.time()
+            #MModes = FindMModes(Pt1.shape[0], G, delta, N)
+            #time_dur = time.time() - start_time
+            G, K = ConstructSparseG(G1, Pt1, G2, Pt2)
 
             # G.SetVerbost(True)\
             #G = ConstructDenseG(G1, Pt1, G2, Pt2)
             # G.SetVerbost(True)
             G.SetVerbose(False)
-         
+            NofNodes = Pt1.shape[0]
+            xhat = None
+            bestv = 0
+
+            for iter in range(1000):
+                G.UpdateMessages()
+                xc = G.GetCurrentDecode()
+                xcv = G.CurrentPrimal()
+                xc_mat = np.zeros([NofNodes * NofNodes])
+                for xi in range(NofNodes):
+                    xc_mat[xi* NofNodes + xc[xi]] = 1
+                xc1 = K.dot(xc_mat)
+                xct_mat = np.reshape(xc1,[NofNodes, NofNodes]).transpose()
+                lastcv = 0
+                xt_array = intArray(NofNodes)
+                for niter in range(1000):
+                    row_ind, xt = linear_sum_assignment(-xct_mat)
+                    cv = xct_mat[row_ind, xt].sum()
+                    if(abs(cv - lastcv) < 1e-6):
+                        break;
+                    lastcv = cv
+
+                    xt_mat = np.zeros([NofNodes * NofNodes])
+                    for xi in range(NofNodes):
+                        xt_mat[xi * NofNodes + xt[xi]] = 1
+                        xt_array[xi] = xt[xi]
+                    xc1 = K.dot(xt_mat)
+                    xct_mat = np.reshape(xc1, [NofNodes, NofNodes]).transpose()
+                    xcv = xt_mat.dot(xc1)
+                    xcv2 = G.ComputeObj(xt_array)
+                    if(xcv > bestv):
+                        bestv = xcv
+                        xhat = xt
+
+
             time_start = time.time()
             G.Solve(1000)
             time_dur = time.time() - time_start

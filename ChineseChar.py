@@ -2,6 +2,7 @@ import scipy.io as sio
 # import cv2
 import numpy as np
 import numpy.matlib
+from scipy.sparse import lil_matrix
 from FactorBP import *
 from FactorBP.FactorGraph import *
 
@@ -42,7 +43,7 @@ def ComputeSim(Edges1, Edges2, Pt1, Pt2):
 def ConstructDenseG(G1, Pt1, G2, Pt2):
     Edges1 = np.nonzero(G1)
     Edges2 = np.nonzero(G2)
-
+    
     NofNodes = len(G1[0])
     NofStates = intArray(NofNodes);
     for i in range(NofNodes):
@@ -99,8 +100,8 @@ def ConstructDenseG(G1, Pt1, G2, Pt2):
 def ConstructSparseG(G1, Pt1, G2, Pt2):
     Edges1 = np.nonzero(G1)
     Edges2 = np.nonzero(G2)
-
     NofNodes = len(G1[0])
+    K = lil_matrix((NofNodes * NofNodes, NofNodes * NofNodes))
     NofStates = intArray(NofNodes);
     for i in range(NofNodes):
         NofStates[i] = NofNodes
@@ -132,6 +133,8 @@ def ConstructSparseG(G1, Pt1, G2, Pt2):
         ej = int(Edges1[1][i])
         if (ei > ej):
             continue;
+        eij = ei * NofNodes + ej
+        eji = ej * NofNodes + ei
         revIdx = int(G1EIdx[ej][ei])
         EPotentials = doubleArray(NofNodes * NofNodes)
         for xij in range(NofNodes * NofNodes):
@@ -144,10 +147,11 @@ def ConstructSparseG(G1, Pt1, G2, Pt2):
             xji = int(xj * NofNodes + xi)
             EPotentials[xij] += EdgeSim[i][j]
             EPotentials[xji] += EdgeSim[revIdx][j]
-
+            K[ei * NofNodes + xi, ej * NofNodes + xj] += EdgeSim[i][j]
+            K[ei * NofNodes + xj, ej * NofNodes + xi] += EdgeSim[revIdx][j]
             EPotentials[xi * NofNodes + xi] = -10000
 
         G.AddSparseEdgeNZ(ei, ej, EPotentials, mi, mj, NNZs, nnzIdx)
 
     G.AddAuctionFactor()
-    return G
+    return G, K
