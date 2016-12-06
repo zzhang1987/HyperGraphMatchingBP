@@ -2,7 +2,7 @@ import scipy.io as sio
 # import cv2
 import numpy as np
 import numpy.matlib
-from scipy.sparse import lil_matrix
+from scipy.sparse import csr_matrix
 from FactorBP import *
 from FactorBP.FactorGraph import *
 
@@ -101,7 +101,7 @@ def ConstructSparseG(G1, Pt1, G2, Pt2):
     Edges1 = np.nonzero(G1)
     Edges2 = np.nonzero(G2)
     NofNodes = len(G1[0])
-    K = lil_matrix((NofNodes * NofNodes, NofNodes * NofNodes))
+    K = csr_matrix((NofNodes * NofNodes, NofNodes * NofNodes))
     NofStates = intArray(NofNodes);
     for i in range(NofNodes):
         NofStates[i] = NofNodes

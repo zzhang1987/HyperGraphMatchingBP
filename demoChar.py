@@ -121,48 +121,52 @@ for idx in range(4):
             NofNodes = Pt1.shape[0]
             xhat = None
             bestv = 0
-
+            K = 0.5 * (K + K.transpose())
+            lastdual = 1e20
             for iter in range(1000):
                 G.UpdateMessages()
                 xc = G.GetCurrentDecode()
                 xcv = G.CurrentPrimal()
-                xc_mat = np.zeros([NofNodes * NofNodes])
+                xc_mat = np.zeros([NofNodes, NofNodes])
                 for xi in range(NofNodes):
-                    xc_mat[xi* NofNodes + xc[xi]] = 1
-                xc1 = K.dot(xc_mat)
-                xct_mat = np.reshape(xc1,[NofNodes, NofNodes]).transpose()
-                lastcv = 0
-                xt_array = intArray(NofNodes)
-                for niter in range(1000):
-                    row_ind, xt = linear_sum_assignment(-xct_mat)
-                    cv = xct_mat[row_ind, xt].sum()
-                    if(abs(cv - lastcv) < 1e-6):
-                        break;
-                    lastcv = cv
-
-                    xt_mat = np.zeros([NofNodes * NofNodes])
+                    xc_mat[xi][xc[xi]] = 1
+                xc_vec = xc_mat.reshape([NofNodes * NofNodes, 1])
+                last_cv = 0
+                for iter in range(100):
+                    c1 = K.dot(xc_vec.copy())
+                    c1mat = c1.reshape([NofNodes, NofNodes])
+                    row_inds, x1 = linear_sum_assignment(-c1mat)
+                    x1_mat = np.zeros([NofNodes, NofNodes])
                     for xi in range(NofNodes):
-                        xt_mat[xi * NofNodes + xt[xi]] = 1
-                        xt_array[xi] = xt[xi]
-                    xc1 = K.dot(xt_mat)
-                    xct_mat = np.reshape(xc1, [NofNodes, NofNodes]).transpose()
-                    xcv = xt_mat.dot(xc1)
-                    xcv2 = G.ComputeObj(xt_array)
-                    if(xcv > bestv):
-                        bestv = xcv
-                        xhat = xt
+                        x1_mat[xi][x1[xi]] = 1
+                    x1_vec = x1_mat.reshape([NofNodes * NofNodes, 1])
+                    cv = x1_vec.transpose().dot(c1)
+                    if(abs(cv - last_cv) < 1e-6):
+                        break
+                    last_cv = cv
+                    rv = x1_vec.transpose().dot(K.dot(x1_vec))
+                    if(rv > bestv):
+                        bestv = rv
+                        xhat = x1_mat.argmax(axis=0)
+                    xc_vec = x1_mat.reshape([NofNodes * NofNodes, 1])
+                dual = G.DualValue()
+                primal = bestv
+                if(abs(dual - primal) < 1e-2):
+                    break
+                if(abs(dual - lastdual) < 1e-2):
+                    break
+                lastdual = dual
 
-
-            time_start = time.time()
-            G.Solve(1000)
-            time_dur = time.time() - time_start
+            #time_start = time.time()
+            #G.Solve(1000)
+            #time_dur = time.time() - time_start
             #res = BaBSolver(G,2,1000,0.0005, False);
             #print("Time=%.4f" % res.Time)
             #dG.SetVerbose(True)
-            res = G.GetDecode()
+            res = xhat
             corrected = np.ones([len(res), 1]);
 
-            AllTime += time_dur #res.Time
+            #AllTime += time_dur #res.Time
 
             decode = res
             ErrAssign = 0.0;
@@ -181,5 +185,5 @@ for idx in range(4):
 
             # print(G.GetDecode())
 
-    print("Char", idx, " Accuracy ", 1 - SumErrorRate / cnt, "Time ", AllTime/cnt)
+    print("Char", idx, " Accuracy ", 1 - SumErrorRate / cnt) #, "Time ", AllTime/cnt)
     #plt.show()
