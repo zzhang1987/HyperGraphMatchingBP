@@ -30,8 +30,8 @@ for NofOus in NOus:
     AccuracyMap = np.zeros(len(Index))
     
     for idx in Index:
-        #FileName = 'Diverse/%s_ID%d_NOus%d_Delta_0.100000_SDiverse.pkl' % (Fname, idx, NofOus)
-        FileName = '%s_ID%d_NOus%d.pkl' % (Fname, idx, NofOus)
+        FileName = 'Diverse/%s_ID%d_NOus%d_Delta_0.100000_SDiverse.pkl' % (Fname, idx, NofOus)
+        #FileName = '%s_ID%d_NOus%d.pkl' % (Fname, idx, NofOus)
         
         
         f = open(FileName, "rb")
@@ -41,7 +41,7 @@ for NofOus in NOus:
         f.close()
         
         sorted_Modes = sorted(Modes.items(), key=operator.itemgetter(1), reverse=True)
-
+	print(len(Modes))
         NofNodes = gTruth.shape[0]
         AllV = np.array(list(Modes.values()))
         MV = AllV.mean()

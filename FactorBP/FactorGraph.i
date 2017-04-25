@@ -44,7 +44,6 @@ namespace std{
  }
 
 
-
 //%typemap(in) (int *decode) {
 //     if (PyList_Check($input)) {
 //	  int size = PyList_Size($input);
