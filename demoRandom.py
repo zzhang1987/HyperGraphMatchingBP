@@ -13,9 +13,9 @@ def ComputeAccurancy(Decode, gTruth, NofInliers):
             Ccnt += 1
     return 1.0 * Ccnt / NofInliers
 
-NofInliers = 20
+NofInliers = 50
 MaxNofOutliers = 30
-Noise = 1
+Noise = 0
 
 NofOus = 0
 np.random.seed(123456)
@@ -51,15 +51,15 @@ for deg in range(90,190,10):
         MG1 = FB.MatchingGraph(PT1[0:NofNodes], PF1[0:NofNodes])
         MG2 = FB.MatchingGraph(PT2[0:NofNodes], PF2[0:NofNodes])
 
-        G = FB.ConstructMatchingModel(MG1, MG2, 'syn', True)
-        G = FB.ConstructMatchingModelRandom(MG1, MG2, 'syn', True)
+        G, MFName = FB.ConstructMatchingModel(MG1, MG2, 'syn', True)
+        #G = FB.ConstructMatchingModelRandom(MG1, MG2, 'syn', True)
 
 
         G2 = FB.ConstructMatchingModel(MG1, MG2, 'syn', False)
         Gvis = FB.ConstructMatchingModel(MG1, MG2, 'syn', True)
         G.SetVerbose(False)
 
-        res1 = FB.BaBSolver(G, 100, 10, 0.005, True)
+        res1 = FB.BaBSolver(G, 1000, 10, 0.005, True)
         res2 = FB.BaBSolver(G2, 100, 10, 0.005, False)
 
 

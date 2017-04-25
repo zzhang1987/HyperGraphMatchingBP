@@ -33,10 +33,8 @@ def pmap(f, tasks, n_jobs=mp.cpu_count(), **kw):
         p.join()
     return results
 
-
-
 CarData = LoadCar()
 Index = range(1,31)
 NOus = range(0,21)
-Deltas = np.arange(0.1,1.01,0.1)
-pmap(RunDataPDiverse, [('Car', CarData, idx, NofOus,10, Delta) for (idx,NofOus,Delta) in product(Index,NOus,Deltas) ], n_jobs=32)
+Deltas = np.arange(4.0,8.01,1.0)
+pmap(RunDataPDiverse, [('Car', CarData, idx, NofOus,10, Delta) for (idx,NofOus,Delta) in product(Index,NOus,Deltas) ], n_jobs=8)
