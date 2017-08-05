@@ -1,13 +1,28 @@
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np;
+import numpy as np
+from skimage.transform import rescale, resize, downscale_local_mean
 
-def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers, StoreFileName):
+def drawMatchesWithOutlier(I1, I2, Pt1, Pt2,
+                           matches, gTruth, NofInliers, StoreFileName,
+                           l1_scale=1.0, l2_scale=1.0):
+    
+    I1_rescale = np.asarray(255 * rescale(I1, l1_scale), dtype=np.uint8)
+    I2_rescale = np.asarray(255 * rescale(I2, l2_scale), dtype=np.uint8)
+    I1 = I1_rescale
+    I2 = I2_rescale
+    
+    Pt1_rescale = l1_scale * Pt1
+    Pt2_rescale = l2_scale * Pt2
+    Pt1 = Pt1_rescale
+    Pt2 = Pt2_rescale
+    
     h1 = I1.shape[0]
     w1 = I1.shape[1]
     
     h2 = I2.shape[0]
     w2 = I2.shape[1]
+    print('h1: %d  w1: %d, h2:%d w2:%d' % (h1, w1, h2, w2))
     
     fig = plt.figure(1)
     fig.clf()
@@ -44,10 +59,10 @@ def drawMatchesWithOutlier(I1, I2, Pt1, Pt2, matches, gTruth, NofInliers, StoreF
 
 
 
-    plt.plot([w1, w1], [0, h], color='#eeefff', linewidth=2.0)
+    plt.plot([w1, w1], [0, h], color='#eeefff', linewidth=1.0)
 
-    plt.plot(Pt1[:,1] , Pt1[:,0] + d11, 'ro')
-    plt.plot(Pt2[:,1] + w1, Pt2[:,0] + d21, 'ro' )
+    plt.plot(Pt1[:,1] , Pt1[:,0] + d11, 'ro', markersize=3)
+    plt.plot(Pt2[:,1] + w1, Pt2[:,0] + d21, 'ro', markersize=3)
 
     for i in range(matches.shape[0]):
         if(matches[i] == gTruth[i] and gTruth[i] < NofInliers):

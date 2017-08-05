@@ -331,7 +331,7 @@ namespace zzhang{
 	       }
 	       return res;
 	  }
-	  std::vector<std::vector<double> > ComputeGradient(int n, in *decode);
+	  // std::vector<std::vector<double> > ComputeGradient(int n, int *decode);
      };
 }
 
