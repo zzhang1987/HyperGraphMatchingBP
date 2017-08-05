@@ -3,7 +3,8 @@ load(Fname);
 global footpath;
 %delete(gcp)
 %parpool
-footpath = '/Users/zhen/Inference/code/';
+homepath = getenv('HOME');
+footpath = strcat(homepath, '/Inference/code/');
 footpath = strcat(footpath,'/fgm');
 rng(45678);
 
