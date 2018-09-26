@@ -4,7 +4,7 @@ Code for paper "Dynamic Programming Bipartite Belief Propagation For Hyper Graph
 
 ## Requirements:
 
-swig, matlab and matlab python module
+python2.7, swig, matlab and matlab python module
 
 
 ## Compiling:
